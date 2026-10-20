@@ -29,7 +29,7 @@ describe('developer controls (S8, D13.14)', () => {
 
   it('follows dev changes from other viewers via the stream', async () => {
     const { client } = renderApp({ user: { name: 'Sam', role: 'viewer' } });
-    await screen.findByRole('region', { name: 'Simulator controls' });
+    await waitFor(() => expect(client.subscribers).toBe(1));
     act(() => client.emitDev({ rate: 5, failNextRouteChange: false }));
     expect(await screen.findByText('Streaming · 5 requests/s')).toBeDefined();
   });
