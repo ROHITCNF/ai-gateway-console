@@ -1,14 +1,5 @@
 import { PageHeader } from '@/components/PageHeader';
 
-export function CostSpeedPage() {
-  return (
-    <PageHeader
-      title="Cost & Speed"
-      intro="What your AI traffic costs and how fast it answers, by model and by feature."
-    />
-  );
-}
-
 export function RoutingPage() {
   return (
     <PageHeader
