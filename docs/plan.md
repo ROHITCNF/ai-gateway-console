@@ -58,7 +58,7 @@ A slice is done when its FRs work in the running app and its tests pass (NFR-14)
 
 - [x] **3.1 Time-bucket aggregates.** (#24) Incremental buckets on the store: spend, count, failed, fallback, p50/p95 latency (D8). Tests.
 - [x] **3.2 ECharts hook.** (#25) `useEChart` with tree-shaken `echarts/core`, resize, dispose, theme from Tailwind tokens (D14.1). Lazy-loaded route (NFR-4).
-- [ ] **3.3 Cost & Speed screen.** (#26) KPI tiles, spend over time, latency p50/p95, spend by model and by feature, price table marked "example prices", time range switch, states (FR-10..FR-15, NFR-12).
+- [x] **3.3 Cost & Speed screen.** (#26) KPI tiles, spend over time, latency p50/p95, spend by model and by feature, price table marked "example prices", time range switch, states (FR-10..FR-15, NFR-12).
 
 ## Slice 4: Routing and History
 
