@@ -52,7 +52,7 @@ A slice is done when its FRs work in the running app and its tests pass (NFR-14)
 - [x] **2.4 Toolbar.** (#20) Filters, ID search, time range, active-filter chips + clear all, row count, Pause/Resume with "N new" (FR-4, FR-5, FR-6).
 - [x] **2.5 Detail panel.** (#21) S2a: planned vs served model, tokens, cost, latency, error reason, fallback explanation; Esc closes (FR-7, FR-8).
 - [x] **2.6 Developer controls panel.** (#22) S8 collapsible, rate / drop / fail next, marked as simulator (D13.14).
-- [ ] **2.7 States.** (#23) Loading, empty ("No requests match these filters"), error (NFR-12).
+- [x] **2.7 States.** (#23) Loading, empty ("No requests match these filters"), error (NFR-12).
 
 ## Slice 3: Cost & Speed
 

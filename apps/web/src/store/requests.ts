@@ -219,16 +219,16 @@ export function connectRequests(
     onRequests: (reqs) => store.getState().receive(reqs),
     onStatus: (status) => store.getState().setConnection(status),
   });
-  if (s.load !== 'ready') {
-    s.setLoad('loading');
-    client
-      .getRequests({ limit: 10_000 })
-      .then((reqs) => store.getState().setSnapshot(reqs))
-      .catch((e: unknown) =>
-        store
-          .getState()
-          .setLoad('error', e instanceof Error ? e.message : 'Could not load requests'),
-      );
-  }
+  if (s.load !== 'ready') void loadSnapshot(client, store);
   return stop;
+}
+
+/** Loads the newest 10k requests; on failure the store shows the error state (NFR-12). */
+export async function loadSnapshot(client: GatewayClient, store: RequestStore): Promise<void> {
+  store.getState().setLoad('loading');
+  try {
+    store.getState().setSnapshot(await client.getRequests({ limit: 10_000 }));
+  } catch (e) {
+    store.getState().setLoad('error', e instanceof Error ? e.message : 'Could not load requests');
+  }
 }
