@@ -1,5 +1,8 @@
 import { PageHeader } from '@/components/PageHeader';
+import { FilterSummary } from '@/features/live/FilterSummary';
+import { PauseControl } from '@/features/live/PauseControl';
 import { RequestTable } from '@/features/live/RequestTable';
+import { Toolbar } from '@/features/live/Toolbar';
 import { useFilteredRequests, useRequests } from '@/store';
 
 /** S2: Live Requests, the landing screen. */
@@ -13,7 +16,10 @@ export function LiveRequestsPage() {
       <PageHeader
         title="Live Requests"
         intro="Every AI request your features send through the gateway, newest first. Click a row to see what happened."
+        actions={<PauseControl />}
       />
+      <Toolbar />
+      <FilterSummary shown={rows.length} />
       <RequestTable rows={rows} selectedId={selectedId} onSelect={select} />
     </div>
   );
