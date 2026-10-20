@@ -224,3 +224,19 @@ If a decision changes, add a new entry at the bottom and mark the old one as rep
 14. **Hosting:** decided at the last slice, as a new entry. The backend needs a long-running host, because of the simulator and the live stream.
 
 **Why:** It matches how a real console would work, puts permission checks where they cannot be bypassed, and keeps secrets out of the browser, while the data stays simulated.
+
+---
+
+## D16. Local database: Neon when configured, PGlite otherwise
+
+> Clarifies D15.3.
+
+**Decision:**
+
+1. When `DATABASE_URL` is set in `apps/api/.env`, the backend uses that Postgres. For local development this is a Neon `dev` branch, reached through its direct (not pooled) connection string with `sslmode=require`, using the `postgres` (postgres.js) driver.
+2. When `DATABASE_URL` is not set, the backend uses PGlite, so the project runs after a fresh clone with no setup.
+3. Tests always use PGlite, never `DATABASE_URL`. They stay fast, isolated and offline, and CI needs no secret.
+4. `SIM_ENABLED=false` runs the backend without the simulator, so the database is not written to all the time.
+5. The connection string is a secret (NFR-8). It lives only in the git-ignored `.env`. A committed `.env.example` holds placeholders only.
+
+**Why:** The developer already has a Neon project and wants to work against real Postgres locally. The simulator writes all the time, which keeps Neon's compute awake and uses up free-tier hours, so it can be switched off.

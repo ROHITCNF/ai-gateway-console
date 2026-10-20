@@ -8,7 +8,7 @@ Requirements are **frozen** (2026-10-20). Read before building any slice:
 
 - `docs/intent.md`: problem and success criteria.
 - `docs/spec.md`: screens, FR-1..FR-32, NFR-1..NFR-17, data entities, flows A–H. Cite FR/NFR ids in commits and tests.
-- `docs/decisions.md`: how we build it and where we simplify (D1–D15). **Later entries override earlier ones and `spec.md`** where they differ (D13, D14, D15).
+- `docs/decisions.md`: how we build it and where we simplify (D1–D16). **Later entries override earlier ones and `spec.md`** where they differ (D13–D16).
 - `docs/plan.md`: task checklist. One task = one issue = one PR.
 
 `intent.md` and `spec.md` stay unedited. A requirement change or new clarification becomes a new `D<n>` entry at the bottom of `decisions.md`; a replaced entry is marked replaced, never deleted. Ask the user before adding one.
@@ -18,7 +18,7 @@ Requirements are **frozen** (2026-10-20). Read before building any slice:
 pnpm workspaces monorepo:
 
 - `apps/web`: React + TypeScript + Vite, Tailwind v4 + shadcn/ui (Radix), Zustand, TanStack Table + Virtual, Apache ECharts (tree-shaken `echarts/core`), React Router.
-- `apps/api`: Node + Hono, Drizzle ORM, Postgres (PGlite for local dev and tests, `DATABASE_URL` for hosted), Server-Sent Events.
+- `apps/api`: Node + Hono, Drizzle ORM, Postgres via `DATABASE_URL` when set (Neon `dev` branch locally), PGlite otherwise; tests always PGlite (D16), Server-Sent Events.
 - `packages/contracts`: Zod schemas and types shared by web and api.
 - Tests: Vitest everywhere, React Testing Library in web. Lint/format: Biome.
 
