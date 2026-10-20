@@ -1,0 +1,181 @@
+# Decisions: AI Gateway Console
+
+This file records the choices we made to keep the project buildable by one person, and why. `intent.md` and `spec.md` describe the full system. This file says how we build it and where we simplify.
+
+If a decision changes, add a new entry at the bottom and mark the old one as replaced. Do not delete old entries.
+
+> **Status: requirements FROZEN (2026-10-20).** `intent.md` and `spec.md` are frozen. Any change or clarification is a new entry here.
+
+---
+
+## D1. The request data is simulated
+
+**Decision:** The data in this project is simulated. No real AI model is called, and nothing here is real company traffic.
+
+**What it means:** The console talks to a gateway API, as described in `spec.md`. In this project that API is implemented by a local simulator that runs in the browser. It creates requests, follows the current routing rules, fails some requests, and uses the backup model when that happens.
+
+**Why:**
+
+- It costs nothing. There are no API keys to protect.
+- It is repeatable, so we can test and measure performance properly.
+- It is safe to publish on GitHub.
+
+**Keeping it replaceable:** All screens get their data through one small interface, called the gateway client. The simulator is one implementation of it. A real gateway could be connected later by writing a second implementation, without changing the screens.
+
+---
+
+## D2. How the simulator behaves
+
+**Decision:** The simulator follows these rules.
+
+- **Features:** five example features: support-bot, code-review, search-summary, invoice-reader and onboarding-helper, each owned by a team.
+- **Models:** seven example models: a large, a medium and a small model, plus Grok, GPT, Gemini and a self-hosted model.
+- **Failures:** about 3% to 5% of requests to any model fail or time out. The backup model then answers, so fallbacks show up on screen.
+- **Speed and size:** bigger models are slower and cost more. Token counts are random but realistic.
+- **Starting data:** the app starts with 10,000 requests already in the log, so the table and charts are never empty and the performance target can be tested straight away.
+- **Live traffic:** new requests then keep arriving. The default is one per second. A small developer control can switch to 5 or 20 per second for performance testing.
+- **Repeatable runs:** the simulator can use a fixed seed, so tests get the same data every time.
+
+**Why:** It makes the console look and behave like it is connected to a busy system, and it gives us a controlled way to test speed.
+
+---
+
+## D3. Model prices are example values
+
+**Decision:** The model prices are example numbers, not real prices. They live in one config file and are marked as examples there.
+
+**Why:** Real prices change often and we are not billing anyone. One file makes them easy to change.
+
+---
+
+## D4. Sign-in is a role picker
+
+**Decision:** There are no real accounts. The sign-in screen lets the person choose a name and a role (Viewer or Admin).
+
+**What it means:** The rest of the app behaves as if the role was assigned by the company. Permission checks still run in the code that applies a route change, not only in the buttons. Real sign-in could replace the role picker later by swapping one module.
+
+**Why:** Real accounts add work (passwords, a database, password reset) that does not help show the main product.
+
+---
+
+## D5. Storage is in the browser
+
+**Decision:** There is no server and no database. Routing rules and route history are saved in the browser's local storage, so a refresh keeps them. Requests are generated again each time the app starts.
+
+**Why:** It keeps deployment simple (a static site) and removes a whole area of work.
+
+---
+
+## D6. The chat panel uses fixed rules, not an AI model
+
+**Decision:** The chat panel understands requests with pattern matching and a small list of known words (feature names, model names, "failed", "today", "cheaper" and so on). It does not call an AI model.
+
+**What it understands:**
+
+- Filter requests by feature, model, status, team and time.
+- Questions about cost, for example "how much did support-bot cost today".
+- Suggesting a route change, for example "move support-bot to a cheaper model".
+
+**What stays the same either way:**
+
+- It always shows what it understood.
+- It never applies a change. Only the Confirm click does.
+- A Viewer asking for a change gets a polite refusal.
+
+**Why:** No real model calls means no keys, no cost, and predictable behaviour that is easy to test.
+
+**Keeping it replaceable:** The panel uses one interface to turn text into an action. An AI-based version could replace the rule-based one later.
+
+---
+
+## D7. Live updates are batched
+
+**Decision:** New requests come in through a subscribe interface, the same shape a real live stream would have. The app collects them and updates the screen in batches (about every 250 ms) instead of once per request.
+
+**Why:** Updating the screen on every single request would make the table stutter at higher speeds.
+
+---
+
+## D8. How we keep the table fast
+
+**Decision:**
+
+- The table only draws the rows on screen (virtualisation), using TanStack Table and TanStack Virtual.
+- The 10,000+ requests live in a store (Zustand), outside the components.
+- Charts do not use raw rows. We group requests into time buckets (for example every 10 seconds) and update those totals as new requests arrive.
+- Filters run on the stored data, not on drawn rows.
+
+**Why:** These are the usual causes of slow tables and charts. Deciding this early avoids rewrites.
+
+---
+
+## D9. Tech stack
+
+**Decision:**
+
+- React, TypeScript and Vite.
+- Zustand for state.
+- TanStack Table and Virtual for the log.
+- Recharts for charts.
+- Vitest and React Testing Library for tests.
+- Deployed as a static site on Vercel.
+
+**Why:** Familiar tools, no backend, quick to build and quick to deploy.
+
+---
+
+## D10. What we are not building
+
+- Real user accounts, passwords or multiple organisations.
+- Real model calls or real billing.
+- Alerts by email or chat.
+- A phone-first layout. The app should be readable on a phone, but laptops come first.
+
+**Why:** Each of these is large and none is needed to show the core product: see requests, understand cost, change routes safely.
+
+---
+
+## D11. The README says what is simulated
+
+**Decision:** The README links to this file, so anyone reading the project can see which parts are simulated and which are built for real.
+
+**Why:** It keeps the project honest and saves readers from guessing.
+
+---
+
+## D12. Build order
+
+**Decision:** We build in small slices, each one working before the next starts.
+
+1. Gateway client interface and the simulator, with a few tests.
+2. Live Requests table with filters and the detail panel.
+3. Cost & Speed screen.
+4. Routing screen with the review step, and History with undo.
+5. Role checks.
+6. Chat panel.
+7. Performance measuring, README and deployment.
+
+**Why:** Each slice can be shown on its own, and the hardest part (the fast table) comes early, when it is cheapest to fix.
+
+---
+
+## D13. Requirements frozen, with clarifications
+
+**Decision:** `intent.md`, `spec.md` and D1–D12 are frozen as of 2026-10-20. The points below close gaps found in the spec. Where they differ from `spec.md`, this entry wins.
+
+1. **Sign-in (FR-1, Roles):** the D4 role picker replaces company-assigned roles. The chosen user is kept in local storage until sign-out.
+2. **Models (D2):** ids are `claude-opus` (large), `claude-sonnet` (medium), `claude-haiku` (small), `grok`, `gpt`, `gemini`, `self-hosted`. Prices live in one config file (D3).
+3. **Features and teams (D2, Flow E):** support-bot → Customer Support, code-review → Developer Platform, search-summary → Search, invoice-reader → Payments, onboarding-helper → Growth.
+4. **Starting data (D2):** the 10,000 seed requests are spread over the 3 hours before app start, so "last 5 minutes", "last hour" and "all data" all show different results.
+5. **Time ranges (FR-5, FR-15):** both screens offer last 5 minutes, last hour, all data. In the chat panel "today" means since local midnight.
+6. **Memory cap:** the request store keeps at most 50,000 requests and drops the oldest. This keeps long sessions at 20/s from growing without limit.
+7. **Request outcome (data entities):** `fallback` means the planned model failed and the backup answered; cost and tokens are for the served model, latency includes the failed attempt. If the backup also fails, status is `failed` and cost is 0.
+8. **Disconnect (FR-31, Flow H):** a developer control drops the simulated stream for a chosen time. The simulator keeps generating during the drop. On reconnect the client fetches missed requests with a "requests since timestamp" call, then resumes the stream.
+9. **Route change confirmation (FR-32):** the simulator confirms a route change after a short delay (about 300 ms). A developer control makes the next change fail, to test the error path.
+10. **Estimated cost change (FR-18):** computed from the feature's requests in the last hour (all data if fewer than 50): same token counts priced at the new model vs the old model, shown as a percentage.
+11. **"Cheaper model" in chat (FR-25):** the suggestion is the model with the lowest estimated cost for that feature, excluding its current main model. If none is cheaper, the panel says so and makes no proposal.
+12. **Undo (FR-23):** restores both the old main and old backup model of the latest change for that feature. It goes through the review step and is recorded with source `undo`.
+13. **Persistence (D5):** local storage holds routing rules, route history and the signed-in user. Requests are not stored.
+14. **Developer controls:** request rate (1/5/20 per second), drop connection, fail next route change. They sit in a small collapsible panel, visible to every role.
+
+**Why:** These were open in the spec and would otherwise be decided ad hoc during the build.
