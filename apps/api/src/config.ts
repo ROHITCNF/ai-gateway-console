@@ -12,6 +12,10 @@ export interface Config {
   /** `SIM_ENABLED=false` runs without the simulator (D16.4). */
   simEnabled: boolean;
   simRate: RequestRate;
+  /** Signs session cookies (NFR-8). */
+  sessionSecret: string | undefined;
+  /** `Secure` cookies when served over https. */
+  secureCookie: boolean;
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
@@ -22,5 +26,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     simSeed: Number(env.SIM_SEED ?? 42),
     simEnabled: env.SIM_ENABLED !== 'false',
     simRate: RequestRate.catch(1).parse(Number(env.SIM_RATE ?? 1)),
+    sessionSecret: env.SESSION_SECRET || undefined,
+    secureCookie: env.NODE_ENV === 'production',
   };
 }

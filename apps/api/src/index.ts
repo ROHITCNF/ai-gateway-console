@@ -1,5 +1,6 @@
 import { serve } from '@hono/node-server';
 import { createApp } from './app';
+import { loadSessionSecret } from './auth/secret';
 import { loadConfig } from './config';
 import { openDatabase } from './db/client';
 import { seedRoutingRules } from './db/seed';
@@ -25,6 +26,17 @@ console.log(
   `simulator: ${config.simEnabled ? `on, ${config.simRate}/s, seed ${config.simSeed}` : 'off'}`,
 );
 
-serve({ fetch: createApp({ db: database.db, hub }).fetch, port: config.port }, (info) => {
-  console.log(`api listening on http://localhost:${info.port}`);
-});
+serve(
+  {
+    fetch: createApp({
+      db: database.db,
+      hub,
+      sessionSecret: loadSessionSecret(config.sessionSecret, '.data/session-secret'),
+      secureCookie: config.secureCookie,
+    }).fetch,
+    port: config.port,
+  },
+  (info) => {
+    console.log(`api listening on http://localhost:${info.port}`);
+  },
+);

@@ -22,7 +22,7 @@ const rules = Object.fromEntries(
 describe('read API (FR-29)', () => {
   const t = useTestApp();
   const get = async (path: string) => {
-    const res = await t.app.request(`/api${path}`);
+    const res = await t.as(await t.signIn('viewer'), `/api${path}`);
     return { status: res.status, body: await res.json() };
   };
 
