@@ -28,7 +28,7 @@ A slice is done when its FRs work in the running app and its tests pass (NFR-14)
 - [x] **0.1 Docs: D14, D15, plan.** (#1) Record frontend picks and client-server architecture; update `CLAUDE.md`; add this plan.
 - [x] **0.2 Monorepo scaffold.** (#3) pnpm workspaces (`apps/web`, `apps/api`, `packages/contracts`), shared `tsconfig`, Biome, Vitest in each package, root scripts (`dev`, `build`, `test`, `lint`, `typecheck`). Done when `pnpm dev` starts web + api and `pnpm test` passes.
 - [x] **0.3 CI.** (#4) GitHub Actions on PR: install, lint, typecheck, test.
-- [ ] **0.4 Web base.** (#5) Vite + React + TS, Tailwind v4, shadcn/ui init (Radix), Inter font, lucide-react, React Router. Vite dev proxy `/api` → api.
+- [x] **0.4 Web base.** (#5) Vite + React + TS, Tailwind v4, shadcn/ui init (Radix), Inter font, lucide-react, React Router. Vite dev proxy `/api` → api.
 
 ## Slice 1: Backend, simulator, gateway client
 
