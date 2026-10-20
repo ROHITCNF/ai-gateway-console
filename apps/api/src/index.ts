@@ -5,6 +5,7 @@ import { loadConfig } from './config';
 import { openDatabase } from './db/client';
 import { seedRoutingRules } from './db/seed';
 import { publishBatch } from './routes/stream';
+import { RoutingService } from './routing/service';
 import { Simulator } from './sim/runner';
 import { StreamHub } from './stream/hub';
 
@@ -21,6 +22,13 @@ const simulator = new Simulator({ db: database.db, seed: config.simSeed, rate: c
 await simulator.init();
 const hub = new StreamHub();
 simulator.onBatch((batch) => publishBatch(hub, batch));
+const routing = new RoutingService({
+  db: database.db,
+  onChanged: (result) => {
+    simulator.setRule(result.rule.featureId, result.rule.mainModelId, result.rule.fallbackModelId);
+    hub.broadcast('route-change', result);
+  },
+});
 if (config.simEnabled) simulator.start();
 console.log(
   `simulator: ${config.simEnabled ? `on, ${config.simRate}/s, seed ${config.simSeed}` : 'off'}`,
@@ -31,6 +39,7 @@ serve(
     fetch: createApp({
       db: database.db,
       hub,
+      routing,
       sessionSecret: loadSessionSecret(config.sessionSecret, '.data/session-secret'),
       secureCookie: config.secureCookie,
     }).fetch,
