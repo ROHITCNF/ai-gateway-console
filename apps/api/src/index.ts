@@ -4,6 +4,7 @@ import { loadSessionSecret } from './auth/secret';
 import { loadConfig } from './config';
 import { openDatabase } from './db/client';
 import { seedRoutingRules } from './db/seed';
+import { DevControls } from './dev/controls';
 import { publishBatch } from './routes/stream';
 import { RoutingService } from './routing/service';
 import { Simulator } from './sim/runner';
@@ -22,8 +23,10 @@ const simulator = new Simulator({ db: database.db, seed: config.simSeed, rate: c
 await simulator.init();
 const hub = new StreamHub();
 simulator.onBatch((batch) => publishBatch(hub, batch));
+const dev = new DevControls(simulator, (state) => hub.broadcast('dev', state));
 const routing = new RoutingService({
   db: database.db,
+  shouldFail: () => dev.takeFailNext(),
   onChanged: (result) => {
     simulator.setRule(result.rule.featureId, result.rule.mainModelId, result.rule.fallbackModelId);
     hub.broadcast('route-change', result);
@@ -40,6 +43,7 @@ serve(
       db: database.db,
       hub,
       routing,
+      dev,
       sessionSecret: loadSessionSecret(config.sessionSecret, '.data/session-secret'),
       secureCookie: config.secureCookie,
     }).fetch,
