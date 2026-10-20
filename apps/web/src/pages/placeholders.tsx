@@ -1,14 +1,5 @@
 import { PageHeader } from '@/components/PageHeader';
 
-export function LiveRequestsPage() {
-  return (
-    <PageHeader
-      title="Live Requests"
-      intro="Every AI request your features send through the gateway, newest first. Click a row to see what happened."
-    />
-  );
-}
-
 export function CostSpeedPage() {
   return (
     <PageHeader

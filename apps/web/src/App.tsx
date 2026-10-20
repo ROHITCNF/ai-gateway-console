@@ -2,7 +2,8 @@ import { Navigate, Route, Routes } from 'react-router';
 import { SessionProvider, useSession } from '@/auth/session';
 import { AppShell } from '@/components/shell/AppShell';
 import { type GatewayClient, GatewayProvider } from '@/gateway';
-import { CostSpeedPage, HistoryPage, LiveRequestsPage, RoutingPage } from '@/pages/placeholders';
+import { LiveRequestsPage } from '@/pages/LiveRequests';
+import { CostSpeedPage, HistoryPage, RoutingPage } from '@/pages/placeholders';
 import { SignIn } from '@/pages/SignIn';
 
 function AppRoutes() {
