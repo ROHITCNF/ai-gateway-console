@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { MessageSquare } from 'lucide-react';
+import { lazy, Suspense, useEffect } from 'react';
 import { NavLink, Outlet } from 'react-router';
 import { useSession } from '@/auth/session';
 import { Logo } from '@/components/Logo';
@@ -8,8 +9,12 @@ import { ReviewDialog } from '@/features/routing/ReviewDialog';
 import { useGateway } from '@/gateway';
 import { cn } from '@/lib/utils';
 import { applyConfirmed, connectRequests, gatewayStore, requestStore } from '@/store';
+import { setChatOpen, useChatState } from '@/store/chat';
 import { ConnectionBanner } from './ConnectionBanner';
 import { ConnectionIndicator } from './ConnectionIndicator';
+
+// The chat panel loads only when first opened (NFR-4).
+const ChatPanel = lazy(() => import('@/features/chat/ChatPanel'));
 
 const NAV = [
   { to: '/', label: 'Live Requests', end: true },
@@ -31,6 +36,7 @@ function initials(name: string) {
 export function AppShell() {
   const client = useGateway();
   const { user, signOut } = useSession();
+  const chatOpen = useChatState((s) => s.open);
 
   useEffect(() => {
     client
@@ -68,6 +74,15 @@ export function AppShell() {
         </nav>
         <div className="ml-auto flex items-center gap-4">
           <ConnectionIndicator />
+          <Button
+            variant={chatOpen ? 'secondary' : 'outline'}
+            size="sm"
+            aria-expanded={chatOpen}
+            onClick={() => setChatOpen(!chatOpen)}
+          >
+            <MessageSquare />
+            Ask
+          </Button>
           <span className="flex items-center gap-2 text-sm">
             <span
               className="grid size-8 place-items-center rounded-full bg-secondary text-xs font-medium"
@@ -93,6 +108,20 @@ export function AppShell() {
           <Outlet />
           <DevControls />
         </main>
+        {chatOpen && (
+          <Suspense
+            fallback={
+              <p
+                role="status"
+                className="w-full max-w-sm border-l p-4 text-sm text-muted-foreground"
+              >
+                Loading chat…
+              </p>
+            }
+          >
+            <ChatPanel />
+          </Suspense>
+        )}
         <ReviewDialog />
       </div>
     </div>
