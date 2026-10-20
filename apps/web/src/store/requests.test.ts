@@ -142,6 +142,23 @@ describe('filterRequests (FR-5, FR-6)', () => {
   });
 });
 
+describe('connection state (FR-31)', () => {
+  it('counts backfilled requests while disconnected and reports them on reconnect', () => {
+    const { store, run } = manual();
+    const a = req(1);
+    store.getState().setSnapshot([a]);
+    store.getState().setConnection('connected');
+    store.getState().setConnection('disconnected');
+    store.getState().receive([a, req(2), req(3)]);
+    store.getState().setConnection('connected');
+    run();
+    expect(store.getState().reconnected?.missed).toBe(2);
+    expect(store.getState().requests).toHaveLength(3);
+    store.getState().reset();
+    expect(store.getState().requests).toHaveLength(0);
+  });
+});
+
 describe('connectRequests', () => {
   it('subscribes, loads the snapshot and follows the stream', async () => {
     const client = new FakeGatewayClient({ requests: [req(1), req(2)] });

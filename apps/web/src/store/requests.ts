@@ -21,6 +21,10 @@ export interface RequestState {
   connection: ConnectionStatus;
   /** Bumps on every applied batch; aggregates and charts key off it. */
   version: number;
+  /** New requests backfilled while disconnected (FR-31). */
+  missed: number;
+  /** Set when the stream comes back: how many missed requests were filled in. */
+  reconnected: { missed: number; at: number } | null;
 }
 
 export interface RequestActions {
@@ -35,6 +39,9 @@ export interface RequestActions {
   clearFilters(): void;
   setLoad(load: LoadState, error?: string | null): void;
   setConnection(status: ConnectionStatus): void;
+  dismissReconnected(): void;
+  /** Back to empty, e.g. on sign-out. */
+  reset(): void;
 }
 
 export type RequestStore = ReturnType<typeof createRequestStore>;
@@ -87,7 +94,7 @@ export function createRequestStore(
   let queue: GatewayRequest[] = [];
   let scheduled = false;
 
-  return createStore<RequestState & RequestActions>()((set, get) => ({
+  const initial: RequestState = {
     requests: [],
     pending: [],
     paused: false,
@@ -96,6 +103,12 @@ export function createRequestStore(
     loadError: null,
     connection: 'connecting',
     version: 0,
+    missed: 0,
+    reconnected: null,
+  };
+
+  return createStore<RequestState & RequestActions>()((set, get) => ({
+    ...initial,
 
     setSnapshot(requests) {
       const s = get();
@@ -109,6 +122,11 @@ export function createRequestStore(
 
     receive(requests) {
       if (requests.length === 0) return;
+      if (get().connection === 'disconnected') {
+        const known = new Set(queue.map((r) => r.id));
+        const fresh = requests.filter((r) => !ids.has(r.id) && !known.has(r.id)).length;
+        set({ missed: get().missed + fresh });
+      }
       queue = queue.concat(requests);
       if (!scheduled) {
         scheduled = true;
@@ -158,7 +176,22 @@ export function createRequestStore(
     },
 
     setConnection(connection) {
-      set({ connection });
+      const s = get();
+      if (connection === s.connection) return;
+      if (connection === 'disconnected') set({ connection, missed: 0, reconnected: null });
+      else if (connection === 'connected' && s.connection === 'disconnected')
+        set({ connection, reconnected: { missed: s.missed, at: Date.now() }, missed: 0 });
+      else set({ connection });
+    },
+
+    dismissReconnected() {
+      set({ reconnected: null });
+    },
+
+    reset() {
+      ids.clear();
+      queue = [];
+      set(initial);
     },
   }));
 }
