@@ -6,15 +6,20 @@
   "scripts": {
     "dev": "tsx watch --env-file-if-exists=.env src/index.ts",
     "test": "vitest run",
-    "typecheck": "tsc -p tsconfig.json"
+    "typecheck": "tsc -p tsconfig.json",
+    "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
+    "@electric-sql/pglite": "0.5.10",
     "@gateway/contracts": "workspace:*",
     "@hono/node-server": "2.1.5",
-    "hono": "4.13.13"
+    "drizzle-orm": "0.45.4",
+    "hono": "4.13.13",
+    "postgres": "3.4.9"
   },
   "devDependencies": {
     "@types/node": "26.6.5",
+    "drizzle-kit": "0.31.11",
     "tsx": "4.23.15",
     "typescript": "7.0.2",
     "vitest": "5.0.5"
