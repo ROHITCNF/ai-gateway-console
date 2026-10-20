@@ -1,8 +1,10 @@
 import type { HealthResponse } from '@gateway/contracts';
 import { Hono } from 'hono';
 import { type AuthEnv, requireSession, sessionMiddleware, sessionRoutes } from './auth/session';
+import { ChatService } from './chat/service';
 import type { Db } from './db/client';
 import type { DevControls } from './dev/controls';
+import { chatRoutes } from './routes/chat';
 import { devRoutes } from './routes/dev';
 import { readRoutes } from './routes/read';
 import { routingRoutes } from './routes/routing';
@@ -32,6 +34,7 @@ export function createApp(deps: AppDeps) {
   app.route('/', streamRoutes(deps.hub));
   app.route('/', routingRoutes(deps.routing));
   app.route('/', devRoutes(deps.dev, deps.hub));
+  app.route('/', chatRoutes(new ChatService({ db: deps.db })));
 
   return app;
 }
