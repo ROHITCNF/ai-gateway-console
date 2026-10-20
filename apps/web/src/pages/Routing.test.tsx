@@ -53,7 +53,7 @@ describe('Routing screen (FR-16, FR-17, FR-32)', () => {
     fireEvent.change(mainPicker(), { target: { value: 'claude-haiku' } });
     await act(() => confirmReview(client));
     expect(mainPicker().value).toBe('claude-opus');
-    expect(screen.getByRole('alert').textContent).toContain('support-bot still uses Claude Opus');
+    expect(screen.getByText(/Not changed: .* support-bot still uses Claude Opus\./)).toBeDefined();
   });
 
   it('follows changes confirmed by other viewers via the stream', async () => {
