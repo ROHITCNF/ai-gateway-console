@@ -37,7 +37,7 @@ No real model calls. Secrets only in backend config, never in browser code (NFR-
 
 ## Workflow
 
-Each `docs/plan.md` task: GitHub issue → branch `<issue#>-<slug>` → PR to `main` with `Closes #<issue#>` → merge → tick checkbox in `plan.md` → next task.
+Full steps in `docs/plan.md` → Workflow. In short: every task already has an issue → branch `<issue#>-<slug>` → build + tests → tick its box in `plan.md` → `pnpm lint`, `typecheck`, `test`, `build` pass → PR to `main` with `Closes #<issue#>` → CI green → Claude squash-merges and deletes the branch → sync `main` → next task. One task per PR. New work gets a `plan.md` line and an issue first. Stop and ask the user for anything only they can provide (e.g. `DATABASE_URL`).
 
 ## Build order (D12, adapted by D15)
 

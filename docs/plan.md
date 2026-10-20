@@ -4,13 +4,20 @@ Task checklist derived from `spec.md`, `screens.md` and `decisions.md` (D1–D15
 
 ## Workflow
 
-Each task below is one unit of work:
+Every task below already has a GitHub issue (number in brackets). One task = one issue = one branch = one PR. Never mix two tasks in one PR.
 
-1. Open a GitHub issue for the task (title = task title, body = scope + FR/NFR/D ids + done-when).
-2. Branch `<issue#>-<slug>` from `main`.
-3. Open a PR to `main` with `Closes #<issue#>`. Tests and lint pass in CI.
-4. Merge. The issue closes automatically.
-5. Tick the box here (in the same PR or the next one), then start the next task.
+1. **Pick** the next unticked task, in order. Read its issue and the FR/NFR/D ids it cites.
+2. **Branch** `<issue#>-<slug>` from an up-to-date `main`.
+3. **Build** the task, with tests for its logic. Commits use Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`, `test:`), cite FR/NFR/D ids, and end with `Closes #<issue#>`.
+4. **Tick** the task's box in this file in the same PR.
+5. **Check** before opening the PR: `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm build` all pass, and the change works in the running app (`pnpm dev`) where it has UI or API behaviour.
+6. **Open the PR** to `main`. Title = main commit subject. Body: `Closes #<issue#>`, summary, what was verified and how.
+7. **Merge** once CI is green: squash merge and delete the branch. Claude may merge its own PRs (agreed by the user, 2026-10-20). The issue closes automatically.
+8. **Sync** `main` locally, then go to the next task.
+
+**New or changed work:** if a task needs splitting or a new task appears, add it here and open an issue for it *before* starting. A requirement change needs a new `D<n>` entry in `decisions.md`, approved by the user first.
+
+**Stop and ask the user** when a step needs something only they can provide (for example `DATABASE_URL` at task 1.3), or when a decision is not covered by the docs.
 
 A slice is done when its FRs work in the running app and its tests pass (NFR-14).
 
@@ -20,7 +27,7 @@ A slice is done when its FRs work in the running app and its tests pass (NFR-14)
 
 - [x] **0.1 Docs: D14, D15, plan.** (#1) Record frontend picks and client-server architecture; update `CLAUDE.md`; add this plan.
 - [x] **0.2 Monorepo scaffold.** (#3) pnpm workspaces (`apps/web`, `apps/api`, `packages/contracts`), shared `tsconfig`, Biome, Vitest in each package, root scripts (`dev`, `build`, `test`, `lint`, `typecheck`). Done when `pnpm dev` starts web + api and `pnpm test` passes.
-- [ ] **0.3 CI.** (#4) GitHub Actions on PR: install, lint, typecheck, test.
+- [x] **0.3 CI.** (#4) GitHub Actions on PR: install, lint, typecheck, test.
 - [ ] **0.4 Web base.** (#5) Vite + React + TS, Tailwind v4, shadcn/ui init (Radix), Inter font, lucide-react, React Router. Vite dev proxy `/api` → api.
 
 ## Slice 1: Backend, simulator, gateway client
