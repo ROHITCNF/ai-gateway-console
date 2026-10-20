@@ -74,7 +74,7 @@ A slice is done when its FRs work in the running app and its tests pass (NFR-14)
 
 ## Slice 6: Chat
 
-- [ ] **6.1 Chat parser (backend).** (#33) Rule-based parser: filters (feature, team, model, status, time incl. "today" = since local midnight), cost questions from stored data, route proposals ("cheaper" per D13.11 + D14.4, named model), not-understood, Viewer refusal. Fixed allowed-action list. Tests (NFR-14, NFR-7).
+- [x] **6.1 Chat parser (backend).** (#33) Rule-based parser: filters (feature, team, model, status, time incl. "today" = since local midnight), cost questions from stored data, route proposals ("cheaper" per D13.11 + D14.4, named model), not-understood, Viewer refusal. Fixed allowed-action list. Tests (NFR-14, NFR-7).
 - [ ] **6.2 Chat API.** (#34) `POST /api/chat` → `{understood, action}`; never applies changes (FR-26, NFR-5).
 - [ ] **6.3 Chat panel.** (#35) S7 side panel, lazy-loaded, "Understood" block, example chips, filter actions drive Live Requests, "Review change" opens S5 with source `chat` (FR-24..FR-28, NFR-4).
 
