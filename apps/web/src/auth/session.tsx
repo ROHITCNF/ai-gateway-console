@@ -10,6 +10,7 @@ import {
 } from 'react';
 import { useGateway } from '@/gateway';
 import { requestStore, resetGatewayState } from '@/store';
+import { resetChatState } from '@/store/chat';
 
 interface SessionValue {
   user: User | null;
@@ -49,6 +50,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     await client.signOut().catch(() => {});
     requestStore.getState().reset();
     resetGatewayState();
+    resetChatState();
     setUser(null);
   }, [client]);
 
