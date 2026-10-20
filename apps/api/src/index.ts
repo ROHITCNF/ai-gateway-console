@@ -21,6 +21,6 @@ console.log(
   `simulator: ${config.simEnabled ? `on, ${config.simRate}/s, seed ${config.simSeed}` : 'off'}`,
 );
 
-serve({ fetch: createApp().fetch, port: config.port }, (info) => {
+serve({ fetch: createApp({ db: database.db }).fetch, port: config.port }, (info) => {
   console.log(`api listening on http://localhost:${info.port}`);
 });
