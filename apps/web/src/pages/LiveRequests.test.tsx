@@ -35,7 +35,7 @@ async function setup() {
 
 const rowIds = () =>
   screen
-    .getAllByRole('row')
+    .queryAllByRole('row')
     .map((r) => r.getAttribute('data-request-id'))
     .filter(Boolean);
 
@@ -84,5 +84,30 @@ describe('Live Requests toolbar (FR-4, FR-5, FR-6)', () => {
     expect(rowIds()).toHaveLength(3);
     fireEvent.click(screen.getByRole('button', { name: 'Resume' }));
     expect(rowIds()[0]).toBe('req_new1');
+  });
+});
+
+describe('Live Requests states (NFR-12)', () => {
+  it('shows loading, then the error state with retry', async () => {
+    const { client } = renderApp({ user: { name: 'Sam', role: 'viewer' } });
+    client.fail.getRequests = 'Cannot reach the gateway';
+    expect(await screen.findByText(/Could not load requests/)).toBeDefined();
+    delete client.fail.getRequests;
+    client.requests = seed();
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(await screen.findByText(/Showing 3 of 3 requests/)).toBeDefined();
+  });
+
+  it('shows the no-match state with clear filters', async () => {
+    await setup();
+    fireEvent.change(screen.getByLabelText('Request ID'), { target: { value: 'zzz' } });
+    expect(screen.getByText('No requests match these filters')).toBeDefined();
+    fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
+    expect(rowIds()).toHaveLength(3);
+  });
+
+  it('shows an empty state when there is no traffic', async () => {
+    renderApp({ user: { name: 'Sam', role: 'viewer' } });
+    expect(await screen.findByText('No requests yet')).toBeDefined();
   });
 });
