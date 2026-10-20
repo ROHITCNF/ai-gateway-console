@@ -1,9 +1,9 @@
 import { cleanup } from '@testing-library/react';
 import { afterEach } from 'vitest';
-import { gatewayStore, requestStore } from '@/store';
+import { requestStore, resetGatewayState } from '@/store';
 
 afterEach(() => {
   cleanup();
   requestStore.getState().reset();
-  gatewayStore.setState({ dev: null });
+  resetGatewayState();
 });

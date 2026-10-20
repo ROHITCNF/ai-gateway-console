@@ -62,7 +62,7 @@ A slice is done when its FRs work in the running app and its tests pass (NFR-14)
 
 ## Slice 4: Routing and History
 
-- [ ] **4.1 Routing screen.** (#27) S4 feature list with main/backup pickers; picking opens review; "Applying…" pending and inline error keeping old route (FR-16, FR-17, FR-32).
+- [x] **4.1 Routing screen.** (#27) S4 feature list with main/backup pickers; picking opens review; "Applying…" pending and inline error keeping old route (FR-16, FR-17, FR-32).
 - [ ] **4.2 Review step.** (#28) S5 shared modal: source badge, old → new main and backup, estimate with basis note, Confirm/Cancel, busy and error states, focus trap, Esc = Cancel (FR-18, FR-19, FR-32, NFR-11).
 - [ ] **4.3 History screen.** (#29) S6 list newest first, source badge, estimate; empty state (FR-22, NFR-12).
 - [ ] **4.4 Undo.** (#30) Undo latest change per feature → review step with source `undo`, restores old main and backup (FR-23, D13.12).

@@ -9,7 +9,7 @@ import {
   useState,
 } from 'react';
 import { useGateway } from '@/gateway';
-import { requestStore } from '@/store';
+import { requestStore, resetGatewayState } from '@/store';
 
 interface SessionValue {
   user: User | null;
@@ -48,6 +48,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const signOut = useCallback(async () => {
     await client.signOut().catch(() => {});
     requestStore.getState().reset();
+    resetGatewayState();
     setUser(null);
   }, [client]);
 
