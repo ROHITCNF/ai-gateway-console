@@ -10,6 +10,8 @@ If a decision changes, add a new entry at the bottom and mark the old one as rep
 
 ## D1. The request data is simulated
 
+> **Partly replaced by D15:** the data is still simulated, but the simulator runs in the backend, not the browser. The gateway client seam stays.
+
 **Decision:** The data in this project is simulated. No real AI model is called, and nothing here is real company traffic.
 
 **What it means:** The console talks to a gateway API, as described in `spec.md`. In this project that API is implemented by a local simulator that runs in the browser. It creates requests, follows the current routing rules, fails some requests, and uses the backup model when that happens.
@@ -59,6 +61,8 @@ If a decision changes, add a new entry at the bottom and mark the old one as rep
 ---
 
 ## D5. Storage is in the browser
+
+> **Replaced by D15:** storage is in a Postgres database behind the backend.
 
 **Decision:** There is no server and no database. Routing rules and route history are saved in the browser's local storage, so a refresh keeps them. Requests are generated again each time the app starts.
 
@@ -111,6 +115,8 @@ If a decision changes, add a new entry at the bottom and mark the old one as rep
 
 ## D9. Tech stack
 
+> **Partly replaced by D14 (charts, UI kit) and D15 (backend, deployment).**
+
 **Decision:**
 
 - React, TypeScript and Vite.
@@ -161,6 +167,8 @@ If a decision changes, add a new entry at the bottom and mark the old one as rep
 
 ## D13. Requirements frozen, with clarifications
 
+> **Points 1, 6, 8 and 13 partly replaced by D15. Point 11 clarified by D14.**
+
 **Decision:** `intent.md`, `spec.md` and D1–D12 are frozen as of 2026-10-20. The points below close gaps found in the spec. Where they differ from `spec.md`, this entry wins.
 
 1. **Sign-in (FR-1, Roles):** the D4 role picker replaces company-assigned roles. The chosen user is kept in local storage until sign-out.
@@ -179,3 +187,40 @@ If a decision changes, add a new entry at the bottom and mark the old one as rep
 14. **Developer controls:** request rate (1/5/20 per second), drop connection, fail next route change. They sit in a small collapsible panel, visible to every role.
 
 **Why:** These were open in the spec and would otherwise be decided ad hoc during the build.
+
+---
+
+## D14. Frontend libraries and chat backup rule
+
+**Decision:**
+
+1. **Charts:** Apache ECharts replaces Recharts. Import from `echarts/core` and register only the parts we use (line chart, grid, tooltip, legend, canvas renderer). A small in-house `useEChart` hook handles init, updates, resize and dispose. Charts still read time-bucket aggregates (D8) and load only with the Cost & Speed screen (NFR-4). Simple bar breakdowns (spend by model or feature) are plain CSS bars.
+2. **UI kit:** Tailwind CSS v4 and shadcn/ui built on Radix primitives. Radix gives the dialog focus trap and keyboard behaviour the review step needs (NFR-11).
+3. **Table stays:** TanStack Table and TanStack Virtual (D8) are kept. AG Grid was considered and rejected: large bundle on the landing screen, its own row state next to the store, and its own styling system.
+4. **Chat "cheaper model" (D13.11):** the proposal changes only the main model. The backup model stays as it is. Where the design reference shows the backup changing too, this entry wins.
+5. **Performance numbers (NFR-16):** measured by hand in Chrome DevTools (Performance panel for frame rate, `performance.measure` for filter time). The README states the method next to the numbers.
+
+**Why:** ECharts copes well with live updates. shadcn and Tailwind match the design references. Keeping the backup unchanged makes chat proposals simple and predictable.
+
+---
+
+## D15. Client-server architecture with a database
+
+**Decision:** The console is a client-server app. The browser only renders. All data, including the simulated traffic, comes from our own backend.
+
+1. **Repository:** TypeScript monorepo with pnpm workspaces: `apps/web` (the console), `apps/api` (the backend), `packages/contracts` (shared Zod schemas and types for every entity in `spec.md` §4 and every API call).
+2. **Backend:** Node.js and Hono. The simulator (D2) runs inside the backend as a long-running process. It uses a fixed seed from config (`SIM_SEED`), so tests stay repeatable.
+3. **Database:** Postgres, accessed through Drizzle ORM with migrations. Tables: routing rules, route history, sessions and requests. Local development and tests use PGlite (Postgres compiled to run inside Node, no install needed). A hosted Postgres is used later through `DATABASE_URL`.
+4. **Requests are stored:** every simulated request is written to the database in batches. If the requests table is empty when the backend starts, it seeds 10,000 requests over the 3 hours before start (D13.4). The database keeps the latest 200,000 requests and trims older ones. The browser store still keeps at most 50,000 (D13.6).
+5. **Gateway client seam (D1):** the browser's gateway client talks to the backend over HTTP and a live stream. Screens do not change if the backend's simulator is later replaced by a real gateway.
+6. **Live stream:** Server-Sent Events. Events are batched about every 250 ms (D7) and carry ids, so a reconnecting client can fetch what it missed with `GET /api/requests?since=` (FR-31, D13.8).
+7. **Sign-in (D4, D13.1):** the role picker stays. The backend creates the session and stores the name and role in an httpOnly signed cookie. The browser does not keep the user in local storage.
+8. **Role checks (NFR-6):** the backend's route-change handler checks the role from the session. The UI only mirrors that check.
+9. **Route changes (FR-32, D13.9, D13.10):** the backend computes the cost estimate, waits about 300 ms, applies the change, records history and then confirms. The UI shows the new route only after that confirmation.
+10. **Chat (D6):** the rule-based parser runs in the backend behind `POST /api/chat`, so a future AI version keeps any keys on the server (NFR-8). The browser still checks that the returned action is on the allowed list and never applies a change itself (NFR-5, NFR-7).
+11. **Filtering and charts stay in the browser (D8):** the browser loads a snapshot, then follows the stream. Filters and time buckets run on the browser store, so the 100 ms filter target holds.
+12. **Developer controls (D13.14):** request rate and "fail next route change" are global to the backend, so they affect every viewer of the demo. "Drop connection" affects only the client that pressed it.
+13. **Secrets (NFR-8):** any secret lives only in backend config. Nothing secret is sent to or built into the browser.
+14. **Hosting:** decided at the last slice, as a new entry. The backend needs a long-running host, because of the simulator and the live stream.
+
+**Why:** It matches how a real console would work, puts permission checks where they cannot be bypassed, and keeps secrets out of the browser, while the data stays simulated.
