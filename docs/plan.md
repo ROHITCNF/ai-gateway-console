@@ -46,7 +46,7 @@ A slice is done when its FRs work in the running app and its tests pass (NFR-14)
 
 ## Slice 2: Live Requests
 
-- [ ] **2.1 Request store.** (#17) Zustand store outside components; snapshot load; 250 ms batch apply; 50k cap (D13.6); filter selectors for feature, team, model, status, time range, request ID (FR-5, FR-6, D13.5). Filter tests incl. < 100 ms at 10k (NFR-2).
+- [x] **2.1 Request store.** (#17) Zustand store outside components; snapshot load; 250 ms batch apply; 50k cap (D13.6); filter selectors for feature, team, model, status, time range, request ID (FR-5, FR-6, D13.5). Filter tests incl. < 100 ms at 10k (NFR-2).
 - [ ] **2.2 App shell + sign in.** (#18) S0 role picker, top bar with name/role/sign out, nav, connection indicator, disconnected/reconnected banner (FR-1, FR-2, FR-31, NFR-9, NFR-11).
 - [ ] **2.3 Live Requests table.** (#19) Virtualised TanStack table, newest first, columns per FR-3, status icon + label, fallback badge (FR-3, FR-8, FR-9, NFR-1). Keyboard row selection.
 - [ ] **2.4 Toolbar.** (#20) Filters, ID search, time range, active-filter chips + clear all, row count, Pause/Resume with "N new" (FR-4, FR-5, FR-6).
