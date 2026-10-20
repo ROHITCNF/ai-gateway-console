@@ -1,6 +1,6 @@
 import { EMPTY_FILTERS, type GatewayRequest, type RequestFilters } from '@gateway/contracts';
 import { createStore } from 'zustand/vanilla';
-import type { ConnectionStatus, GatewayClient } from '@/gateway';
+import type { ConnectionStatus, GatewayClient, StreamHandlers } from '@/gateway';
 
 /** Browser cap (D13.6): keep the newest 50k, drop the oldest. */
 export const MAX_REQUESTS = 50_000;
@@ -208,9 +208,14 @@ export function createRequestStore(
  * Wires the gateway client to the store: subscribe first so nothing is missed, then load the
  * snapshot (the store dedupes the overlap).
  */
-export function connectRequests(client: GatewayClient, store: RequestStore): () => void {
+export function connectRequests(
+  client: GatewayClient,
+  store: RequestStore,
+  other: Omit<StreamHandlers, 'onRequests' | 'onStatus'> = {},
+): () => void {
   const s = store.getState();
   const stop = client.subscribe({
+    ...other,
     onRequests: (reqs) => store.getState().receive(reqs),
     onStatus: (status) => store.getState().setConnection(status),
   });

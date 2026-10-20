@@ -21,3 +21,4 @@ export function useFilteredRequests() {
   // biome-ignore lint/correctness/useExhaustiveDependencies: version bumps when time moves on with new data
   return useMemo(() => filterRequests(requests, filters, Date.now()), [requests, filters, version]);
 }
+export * from './gateway';
