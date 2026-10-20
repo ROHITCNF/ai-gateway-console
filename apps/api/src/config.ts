@@ -1,3 +1,5 @@
+import { RequestRate } from '@gateway/contracts';
+
 /** Backend config from environment. Secrets stay here, never in the browser (NFR-8, D15.13). */
 export interface Config {
   port: number;
@@ -5,6 +7,11 @@ export interface Config {
   databaseUrl: string | undefined;
   /** PGlite data directory used when `databaseUrl` is unset. */
   pgliteDir: string;
+  /** Fixed simulator seed (D2, D15.2). */
+  simSeed: number;
+  /** `SIM_ENABLED=false` runs without the simulator (D16.4). */
+  simEnabled: boolean;
+  simRate: RequestRate;
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
@@ -12,5 +19,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     port: Number(env.PORT ?? 8787),
     databaseUrl: env.DATABASE_URL || undefined,
     pgliteDir: env.PGLITE_DIR ?? '.data/pglite',
+    simSeed: Number(env.SIM_SEED ?? 42),
+    simEnabled: env.SIM_ENABLED !== 'false',
+    simRate: RequestRate.catch(1).parse(Number(env.SIM_RATE ?? 1)),
   };
 }
