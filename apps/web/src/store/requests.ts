@@ -25,6 +25,8 @@ export interface RequestState {
   missed: number;
   /** Set when the stream comes back: how many missed requests were filled in. */
   reconnected: { missed: number; at: number } | null;
+  /** Row open in the detail panel (FR-7). */
+  selectedId: string | null;
 }
 
 export interface RequestActions {
@@ -40,6 +42,7 @@ export interface RequestActions {
   setLoad(load: LoadState, error?: string | null): void;
   setConnection(status: ConnectionStatus): void;
   dismissReconnected(): void;
+  select(id: string | null): void;
   /** Back to empty, e.g. on sign-out. */
   reset(): void;
 }
@@ -105,6 +108,7 @@ export function createRequestStore(
     version: 0,
     missed: 0,
     reconnected: null,
+    selectedId: null,
   };
 
   return createStore<RequestState & RequestActions>()((set, get) => ({
@@ -182,6 +186,10 @@ export function createRequestStore(
       else if (connection === 'connected' && s.connection === 'disconnected')
         set({ connection, reconnected: { missed: s.missed, at: Date.now() }, missed: 0 });
       else set({ connection });
+    },
+
+    select(selectedId) {
+      set({ selectedId });
     },
 
     dismissReconnected() {
