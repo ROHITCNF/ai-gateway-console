@@ -1,5 +1,6 @@
 import { FEATURES, getFeature, MODELS, ModelId, type RoutingRule } from '@gateway/contracts';
 import { AlertCircle, Loader2 } from 'lucide-react';
+import { ADMIN_ONLY, useCanChangeRoutes } from '@/auth/useCanChangeRoutes';
 import { Select } from '@/components/ui/field';
 import { formatDateTime, modelName } from '@/lib/format';
 import { openReview, useGatewayState } from '@/store';
@@ -19,12 +20,15 @@ function ModelPicker({
   disabled: boolean;
   onPick(m: ModelId): void;
 }) {
+  const canChange = useCanChangeRoutes();
   return (
     <Select
       id={id}
       aria-label={label}
       value={value}
-      disabled={disabled}
+      disabled={disabled || !canChange}
+      title={canChange ? undefined : ADMIN_ONLY}
+      aria-describedby={canChange ? undefined : 'routes-read-only'}
       onChange={(e) => {
         const m = ModelId.safeParse(e.target.value);
         if (m.success && m.data !== value) onPick(m.data);

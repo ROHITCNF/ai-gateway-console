@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
+import { ADMIN_ONLY, useCanChangeRoutes } from '@/auth/useCanChangeRoutes';
 import { PageHeader } from '@/components/PageHeader';
+import { ReadOnlyNote } from '@/components/ReadOnlyNote';
 import { ErrorState, LoadingState } from '@/components/states';
 import { RoutingTable } from '@/features/routing/RoutingTable';
 import { useGateway } from '@/gateway';
@@ -9,6 +11,7 @@ import { loadRules, useGatewayState } from '@/store';
 export function RoutingPage() {
   const client = useGateway();
   const rules = useGatewayState((s) => s.rules);
+  const canChange = useCanChangeRoutes();
 
   useEffect(() => {
     void loadRules(client);
@@ -22,11 +25,20 @@ export function RoutingPage() {
       />
       {rules.data ? (
         <>
+          {!canChange && (
+            <div id="routes-read-only">
+              <ReadOnlyNote
+                text={`${ADMIN_ONLY} You can see every route; ask an Admin to change one.`}
+              />
+            </div>
+          )}
           <RoutingTable rules={rules.data} />
-          <p className="text-sm text-muted-foreground">
-            Picking a new model opens the review step. Nothing changes until you confirm and the
-            gateway accepts it.
-          </p>
+          {canChange && (
+            <p className="text-sm text-muted-foreground">
+              Picking a new model opens the review step. Nothing changes until you confirm and the
+              gateway accepts it.
+            </p>
+          )}
         </>
       ) : rules.error ? (
         <ErrorState
