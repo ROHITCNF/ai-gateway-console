@@ -35,7 +35,7 @@ A slice is done when its FRs work in the running app and its tests pass (NFR-14)
 - [x] **1.1 Contracts.** (#6) Zod schemas + types for User, Model, Feature, RoutingRule, Request, RouteChange, ChatMessage (spec §4, D13.2, D13.3, D13.7) and API request/response shapes.
 - [x] **1.2 Prices + cost calculation.** (#7) Example prices in one config file (D3); `cost(model, inputTokens, outputTokens)`; tests (NFR-14).
 - [x] **1.3 Database.** (#8) Drizzle schema + migrations: `routing_rules`, `route_changes`, `sessions`, `requests` (indexed on timestamp, feature, model, status). PGlite for dev/test, Postgres via `DATABASE_URL`. Seed 5 features and default rules.
-- [ ] **1.4 Simulator engine (pure).** (#9) Seeded PRNG; request generation by rules; 3–5% failures with fallback; latency/cost per D13.7; size and speed by model (D2). Tests with fixed seed.
+- [x] **1.4 Simulator engine (pure).** (#9) Seeded PRNG; request generation by rules; 3–5% failures with fallback; latency/cost per D13.7; size and speed by model (D2). Tests with fixed seed.
 - [ ] **1.5 Simulator runner.** (#10) Ticks at the configured rate (1/5/20 per second), batch insert, seeds 10k over the last 3 h when the table is empty (D13.4), trims to latest 200k (D15.4).
 - [ ] **1.6 Read API.** (#11) `GET /api/models`, `/features`, `/routes`, `/history`, `/requests?since=&limit=` (FR-29).
 - [ ] **1.7 Live stream.** (#12) `GET /api/stream` SSE, ~250 ms batches with event ids (FR-30, D7, D15.6).
