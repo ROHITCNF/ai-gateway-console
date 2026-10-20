@@ -57,6 +57,31 @@ describe('Viewer UI (FR-21, Flow F)', () => {
     expect(within(dialog).getByText('Only Admins can change routes.')).toBeDefined();
   });
 
+  it('shows the backend 403 and keeps the old route when the UI role is stale (NFR-6)', async () => {
+    // UI only mirrors the role: an admin screen whose session became viewer still gets refused.
+    const { client } = renderApp({ user: { name: 'Priya', role: 'admin' }, path: '/routing' });
+    const picker = (await screen.findByLabelText(
+      'Main model for support-bot',
+    )) as HTMLSelectElement;
+    client.user = viewer;
+    fireEvent.change(picker, { target: { value: 'claude-haiku' } });
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Confirm change' }));
+    const alert = await within(dialog).findByRole('alert');
+    expect(alert.textContent).toContain('Only Admins can change routes');
+    expect(client.rules.find((r) => r.featureId === 'support-bot')?.mainModelId).toBe(
+      'claude-opus',
+    );
+    expect(
+      (
+        screen.getByLabelText('Main model for support-bot', {
+          selector: 'select',
+        }) as HTMLSelectElement
+      ).value,
+    ).toBe('claude-opus');
+    expect(client.history).toHaveLength(0);
+  });
+
   it('admins keep enabled controls', async () => {
     renderApp({ user: { name: 'Priya', role: 'admin' }, path: '/routing' });
     const picker = (await screen.findByLabelText(
