@@ -5,7 +5,8 @@ import { AppShell } from '@/components/shell/AppShell';
 import { LoadingState } from '@/components/states';
 import { type GatewayClient, GatewayProvider } from '@/gateway';
 import { LiveRequestsPage } from '@/pages/LiveRequests';
-import { HistoryPage, RoutingPage } from '@/pages/placeholders';
+import { HistoryPage } from '@/pages/placeholders';
+import { RoutingPage } from '@/pages/Routing';
 
 // Charts load only with the Cost & Speed screen (NFR-4).
 const CostSpeedPage = lazy(() => import('@/pages/CostSpeed'));

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { DevControls } from '@/features/dev/DevControls';
 import { useGateway } from '@/gateway';
 import { cn } from '@/lib/utils';
-import { connectRequests, gatewayStore, requestStore } from '@/store';
+import { applyConfirmed, connectRequests, gatewayStore, requestStore } from '@/store';
 import { ConnectionBanner } from './ConnectionBanner';
 import { ConnectionIndicator } from './ConnectionIndicator';
 
@@ -38,6 +38,8 @@ export function AppShell() {
       .catch(() => {});
     return connectRequests(client, requestStore, {
       onDev: (dev) => gatewayStore.setState({ dev }),
+      // Another viewer's confirmed change (or our own, echoed): same path as Confirm.
+      onRouteChange: applyConfirmed,
     });
   }, [client]);
 
