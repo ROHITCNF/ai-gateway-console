@@ -3,7 +3,9 @@ import { createApp } from './app';
 import { loadConfig } from './config';
 import { openDatabase } from './db/client';
 import { seedRoutingRules } from './db/seed';
+import { publishBatch } from './routes/stream';
 import { Simulator } from './sim/runner';
+import { StreamHub } from './stream/hub';
 
 const config = loadConfig();
 const database = await openDatabase(
@@ -16,11 +18,13 @@ console.log(
 
 const simulator = new Simulator({ db: database.db, seed: config.simSeed, rate: config.simRate });
 await simulator.init();
+const hub = new StreamHub();
+simulator.onBatch((batch) => publishBatch(hub, batch));
 if (config.simEnabled) simulator.start();
 console.log(
   `simulator: ${config.simEnabled ? `on, ${config.simRate}/s, seed ${config.simSeed}` : 'off'}`,
 );
 
-serve({ fetch: createApp({ db: database.db }).fetch, port: config.port }, (info) => {
+serve({ fetch: createApp({ db: database.db, hub }).fetch, port: config.port }, (info) => {
   console.log(`api listening on http://localhost:${info.port}`);
 });
