@@ -52,12 +52,21 @@ export type RequestStore = ReturnType<typeof createRequestStore>;
 const byNewest = (a: GatewayRequest, b: GatewayRequest) =>
   b.timestamp - a.timestamp || (a.id < b.id ? 1 : a.id > b.id ? -1 : 0);
 
+/** What a merge added and dropped; lets aggregates update incrementally (D8). */
+export interface Changes {
+  added: GatewayRequest[];
+  evicted: GatewayRequest[];
+}
+
+export type IngestListener = (changes: Changes) => void;
+
 /** Merges `incoming` into newest-first `current`, deduping by id and capping at `max`. */
 export function mergeNewest(
   current: readonly GatewayRequest[],
   incoming: readonly GatewayRequest[],
   ids: Set<string>,
   max: number,
+  changes?: Changes,
 ): GatewayRequest[] {
   const fresh: GatewayRequest[] = [];
   for (const r of incoming) {
@@ -65,6 +74,7 @@ export function mergeNewest(
     ids.add(r.id);
     fresh.push(r);
   }
+  changes?.added.push(...fresh);
   if (fresh.length === 0) return current as GatewayRequest[];
   fresh.sort(byNewest);
   const head = current[0];
@@ -77,7 +87,9 @@ export function mergeNewest(
   if (merged.length > max) {
     for (let i = max; i < merged.length; i++) {
       const r = merged[i];
-      if (r) ids.delete(r.id);
+      if (!r) continue;
+      ids.delete(r.id);
+      changes?.evicted.push(r);
     }
     merged = merged.slice(0, max);
   }
@@ -89,9 +101,20 @@ export function mergeNewest(
  * `schedule` lets tests drive batching without timers.
  */
 export function createRequestStore(
-  opts: { max?: number; schedule?: (fn: () => void, ms: number) => unknown } = {},
+  opts: {
+    max?: number;
+    schedule?: (fn: () => void, ms: number) => unknown;
+    /** Told about every request that enters or leaves the store, paused or not. */
+    onIngest?: IngestListener;
+  } = {},
 ) {
   const max = opts.max ?? MAX_REQUESTS;
+  const merge = (current: readonly GatewayRequest[], incoming: readonly GatewayRequest[]) => {
+    const changes: Changes = { added: [], evicted: [] };
+    const merged = mergeNewest(current, incoming, ids, max, changes);
+    if (changes.added.length || changes.evicted.length) opts.onIngest?.(changes);
+    return merged;
+  };
   const schedule = opts.schedule ?? ((fn, ms) => setTimeout(fn, ms));
   const ids = new Set<string>();
   let queue: GatewayRequest[] = [];
@@ -117,7 +140,7 @@ export function createRequestStore(
     setSnapshot(requests) {
       const s = get();
       set({
-        requests: mergeNewest(s.requests, requests, ids, max),
+        requests: merge(s.requests, requests),
         load: 'ready',
         loadError: null,
         version: s.version + 1,
@@ -147,10 +170,12 @@ export function createRequestStore(
       if (s.paused) {
         const known = new Set(s.pending.map((r) => r.id));
         const add = batch.filter((r) => !ids.has(r.id) && !known.has(r.id));
+        // Charts keep following live traffic while the table is paused.
+        if (add.length) opts.onIngest?.({ added: add, evicted: [] });
         set({ pending: s.pending.concat(add).slice(-max) });
         return;
       }
-      set({ requests: mergeNewest(s.requests, batch, ids, max), version: s.version + 1 });
+      set({ requests: merge(s.requests, batch), version: s.version + 1 });
     },
 
     pause() {
@@ -162,7 +187,7 @@ export function createRequestStore(
       set({
         paused: false,
         pending: [],
-        requests: mergeNewest(s.requests, s.pending, ids, max),
+        requests: merge(s.requests, s.pending),
         version: s.version + 1,
       });
     },
@@ -197,6 +222,7 @@ export function createRequestStore(
     },
 
     reset() {
+      if (get().requests.length) opts.onIngest?.({ added: [], evicted: get().requests });
       ids.clear();
       queue = [];
       set(initial);
