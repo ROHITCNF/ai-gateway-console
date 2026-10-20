@@ -2,6 +2,8 @@ import type { HealthResponse } from '@gateway/contracts';
 import { Hono } from 'hono';
 import { type AuthEnv, requireSession, sessionMiddleware, sessionRoutes } from './auth/session';
 import type { Db } from './db/client';
+import type { DevControls } from './dev/controls';
+import { devRoutes } from './routes/dev';
 import { readRoutes } from './routes/read';
 import { routingRoutes } from './routes/routing';
 import { streamRoutes } from './routes/stream';
@@ -12,6 +14,7 @@ export interface AppDeps {
   db: Db;
   hub: StreamHub;
   routing: RoutingService;
+  dev: DevControls;
   sessionSecret: string;
   secureCookie?: boolean;
 }
@@ -28,6 +31,7 @@ export function createApp(deps: AppDeps) {
   app.route('/', readRoutes(deps.db));
   app.route('/', streamRoutes(deps.hub));
   app.route('/', routingRoutes(deps.routing));
+  app.route('/', devRoutes(deps.dev, deps.hub));
 
   return app;
 }

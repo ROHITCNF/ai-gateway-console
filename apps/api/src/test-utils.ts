@@ -1,8 +1,9 @@
-import type { Role, RouteChangeResponse } from '@gateway/contracts';
+import type { RequestRate, Role, RouteChangeResponse } from '@gateway/contracts';
 import { afterEach, beforeEach } from 'vitest';
 import { createApp } from './app';
 import { type Database, openDatabase } from './db/client';
 import { seedRoutingRules } from './db/seed';
+import { DevControls } from './dev/controls';
 import { RoutingService } from './routing/service';
 import { StreamHub } from './stream/hub';
 
@@ -18,6 +19,7 @@ export function useTestApp() {
     changed: RouteChangeResponse[];
     /** Set true to fail the next route change. */
     failNext: boolean;
+    dev: DevControls;
     /** Signs in and returns the Cookie header value. */
     signIn(role?: Role, name?: string): Promise<string>;
     /** Request with a signed-in cookie. */
@@ -32,13 +34,28 @@ export function useTestApp() {
     const routing = new RoutingService({
       db: ctx.database.db,
       shouldFail: () => {
-        const f = ctx.failNext;
+        const f = ctx.failNext || ctx.dev.takeFailNext();
         ctx.failNext = false;
         return f;
       },
       onChanged: (r) => ctx.changed.push(r),
     });
-    ctx.app = createApp({ db: ctx.database.db, hub: ctx.hub, routing, sessionSecret: TEST_SECRET });
+    let rate: RequestRate = 1;
+    ctx.dev = new DevControls({
+      get rate() {
+        return rate;
+      },
+      setRate: (r) => {
+        rate = r;
+      },
+    });
+    ctx.app = createApp({
+      db: ctx.database.db,
+      hub: ctx.hub,
+      routing,
+      dev: ctx.dev,
+      sessionSecret: TEST_SECRET,
+    });
   });
   afterEach(() => ctx.database.close());
   ctx.signIn = async (role = 'admin', name = 'Priya') => {
