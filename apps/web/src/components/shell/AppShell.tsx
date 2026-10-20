@@ -3,9 +3,10 @@ import { NavLink, Outlet } from 'react-router';
 import { useSession } from '@/auth/session';
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
+import { DevControls } from '@/features/dev/DevControls';
 import { useGateway } from '@/gateway';
 import { cn } from '@/lib/utils';
-import { connectRequests, requestStore } from '@/store';
+import { connectRequests, gatewayStore, requestStore } from '@/store';
 import { ConnectionBanner } from './ConnectionBanner';
 import { ConnectionIndicator } from './ConnectionIndicator';
 
@@ -30,7 +31,15 @@ export function AppShell() {
   const client = useGateway();
   const { user, signOut } = useSession();
 
-  useEffect(() => connectRequests(client, requestStore), [client]);
+  useEffect(() => {
+    client
+      .getDev()
+      .then((dev) => gatewayStore.setState({ dev }))
+      .catch(() => {});
+    return connectRequests(client, requestStore, {
+      onDev: (dev) => gatewayStore.setState({ dev }),
+    });
+  }, [client]);
 
   if (!user) return null;
   return (
@@ -79,6 +88,7 @@ export function AppShell() {
         <main className="min-w-0 flex-1 space-y-4 p-4 lg:p-6">
           <ConnectionBanner />
           <Outlet />
+          <DevControls />
         </main>
       </div>
     </div>

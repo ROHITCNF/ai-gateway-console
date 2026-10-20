@@ -49,7 +49,7 @@ export class HttpGatewayClient implements GatewayClient {
     this.#base = opts.baseUrl ?? '/api';
     this.#fetch = opts.fetch ?? ((...a) => fetch(...a));
     this.#es = opts.eventSource ?? ((url) => new EventSource(url, { withCredentials: true }));
-    this.#delays = opts.retryDelays ?? [500, 1000, 2000, 4000];
+    this.#delays = opts.retryDelays ?? [500, 1000];
     this.clientId = opts.clientId ?? crypto.randomUUID();
   }
 
