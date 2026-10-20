@@ -2,6 +2,7 @@ import type { ChangeSource, EstimateResponse } from '@gateway/contracts';
 import { getFeature } from '@gateway/contracts';
 import { AlertCircle, ArrowRight, Loader2, TrendingDown, TrendingUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { ADMIN_ONLY, useCanChangeRoutes } from '@/auth/useCanChangeRoutes';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { useGateway } from '@/gateway';
@@ -59,6 +60,7 @@ export function ReviewDialog() {
   const current = useGatewayState((s) =>
     s.rules.data?.find((r) => r.featureId === review?.featureId),
   );
+  const canChange = useCanChangeRoutes();
   const [estimate, setEstimate] = useState<EstimateResponse | null>(null);
   const [estimateError, setEstimateError] = useState<string | null>(null);
 
@@ -162,13 +164,14 @@ export function ReviewDialog() {
             </div>
           )}
         </div>
-        <div className="flex justify-end gap-3 border-t px-6 py-4">
+        <div className="flex flex-wrap items-center justify-end gap-3 border-t px-6 py-4">
+          {!canChange && <p className="mr-auto text-sm text-muted-foreground">{ADMIN_ONLY}</p>}
           <Button variant="outline" onClick={cancelReview} disabled={confirming}>
             Cancel
           </Button>
           <Button
             onClick={() => void confirmReview(client)}
-            disabled={confirming}
+            disabled={confirming || !canChange}
             aria-busy={confirming}
           >
             {confirming && <Loader2 className="animate-spin" aria-hidden />}

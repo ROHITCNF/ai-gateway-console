@@ -23,7 +23,7 @@ export function Field({
 }
 
 const control =
-  'h-9 rounded-md border border-input bg-card px-3 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50';
+  'h-9 rounded-md border border-input bg-card px-3 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground';
 
 export function Select({ className, ...props }: ComponentProps<'select'>) {
   return <select className={cn(control, 'pr-8', className)} {...props} />;

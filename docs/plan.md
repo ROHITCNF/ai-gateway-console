@@ -69,7 +69,7 @@ A slice is done when its FRs work in the running app and its tests pass (NFR-14)
 
 ## Slice 5: Role checks
 
-- [ ] **5.1 Viewer UI.** (#31) Routing pickers disabled with "Only Admins can change routes", Undo hidden/disabled, Confirm disabled (FR-21, Flow F).
+- [x] **5.1 Viewer UI.** (#31) Routing pickers disabled with "Only Admins can change routes", Undo hidden/disabled, Confirm disabled (FR-21, Flow F).
 - [ ] **5.2 Role tests end to end.** (#32) Viewer session gets 403 from the change API even with a crafted request; UI tests for disabled controls (NFR-6, NFR-14).
 
 ## Slice 6: Chat

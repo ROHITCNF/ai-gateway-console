@@ -1,0 +1,68 @@
+import { fireEvent, screen, within } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+import { FakeGatewayClient } from '@/gateway/fake';
+import { openReview } from '@/store';
+import { renderApp } from '@/test/render';
+
+const viewer = { name: 'Sam', role: 'viewer' as const };
+
+describe('Viewer UI (FR-21, Flow F)', () => {
+  it('disables every routing picker with a short note', async () => {
+    renderApp({ user: viewer, path: '/routing' });
+    await screen.findByLabelText('Main model for support-bot');
+    const pickers = screen.getAllByRole('combobox') as HTMLSelectElement[];
+    expect(pickers).toHaveLength(10);
+    expect(pickers.every((p) => p.disabled)).toBe(true);
+    expect(screen.getByText(/Only Admins can change routes\./)).toBeDefined();
+  });
+
+  it('disables Undo in History with a note', async () => {
+    const client = new FakeGatewayClient({ user: viewer });
+    client.history = [
+      {
+        id: 'c1',
+        timestamp: new Date().toISOString(),
+        changedBy: 'Priya',
+        featureId: 'support-bot',
+        oldMainModelId: 'claude-opus',
+        newMainModelId: 'claude-haiku',
+        oldFallbackModelId: 'claude-sonnet',
+        newFallbackModelId: 'claude-sonnet',
+        source: 'click',
+        estimatedCostChangePercent: -80,
+      },
+    ];
+    renderApp({ client, path: '/history' });
+    const undo = await screen.findByRole('button', { name: /Undo latest change/ });
+    expect((undo as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByText('Only Admins can undo changes.')).toBeDefined();
+  });
+
+  it('disables Confirm in the review step for viewers', async () => {
+    const { client } = renderApp({ user: viewer, path: '/routing' });
+    await screen.findByLabelText('Main model for support-bot');
+    openReview({
+      featureId: 'support-bot',
+      mainModelId: 'claude-haiku',
+      fallbackModelId: 'claude-sonnet',
+      source: 'chat',
+    });
+    const dialog = await screen.findByRole('dialog');
+    const confirm = within(dialog).getByRole('button', {
+      name: 'Confirm change',
+    }) as HTMLButtonElement;
+    expect(confirm.disabled).toBe(true);
+    fireEvent.click(confirm);
+    expect(client.calls.some((c) => c.method === 'changeRoute')).toBe(false);
+    expect(within(dialog).getByText('Only Admins can change routes.')).toBeDefined();
+  });
+
+  it('admins keep enabled controls', async () => {
+    renderApp({ user: { name: 'Priya', role: 'admin' }, path: '/routing' });
+    const picker = (await screen.findByLabelText(
+      'Main model for support-bot',
+    )) as HTMLSelectElement;
+    expect(picker.disabled).toBe(false);
+    expect(screen.queryByText(/Only Admins can change routes/)).toBeNull();
+  });
+});

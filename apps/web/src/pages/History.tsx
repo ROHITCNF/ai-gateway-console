@@ -1,6 +1,8 @@
 import { Clock, Undo2 } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
+import { useCanChangeRoutes } from '@/auth/useCanChangeRoutes';
 import { PageHeader } from '@/components/PageHeader';
+import { ReadOnlyNote } from '@/components/ReadOnlyNote';
 import { EmptyState, ErrorState, LoadingState } from '@/components/states';
 import { Button } from '@/components/ui/button';
 import { HistoryTable } from '@/features/history/HistoryTable';
@@ -12,6 +14,7 @@ import { loadHistory, loadRules, openReview, useGatewayState } from '@/store';
 export function HistoryPage() {
   const client = useGateway();
   const history = useGatewayState((s) => s.history);
+  const canChange = useCanChangeRoutes();
   const undoable = useMemo(() => undoableIds(history.data ?? []), [history.data]);
 
   useEffect(() => {
@@ -34,6 +37,7 @@ export function HistoryPage() {
           />
         ) : (
           <>
+            {!canChange && <ReadOnlyNote text="Only Admins can undo changes." />}
             <HistoryTable
               changes={history.data}
               action={(c) =>
@@ -41,6 +45,8 @@ export function HistoryPage() {
                   <Button
                     variant="outline"
                     size="sm"
+                    disabled={!canChange}
+                    title={canChange ? undefined : 'Only Admins can undo changes.'}
                     onClick={() => openReview(undoTarget(c))}
                     aria-label={`Undo latest change to ${c.featureId}`}
                   >
