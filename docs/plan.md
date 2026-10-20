@@ -40,7 +40,7 @@ A slice is done when its FRs work in the running app and its tests pass (NFR-14)
 - [x] **1.6 Read API.** (#11) `GET /api/models`, `/features`, `/routes`, `/history`, `/requests?since=&limit=` (FR-29).
 - [x] **1.7 Live stream.** (#12) `GET /api/stream` SSE, ~250 ms batches with event ids (FR-30, D7, D15.6).
 - [x] **1.8 Session + role middleware.** (#13) `POST/DELETE /api/session`, signed httpOnly cookie `{name, role}`, `requireRole('admin')` (D4, D15.7). Role check tests (NFR-14).
-- [ ] **1.9 Route change API.** (#14) `POST /api/routes/estimate` (D13.10); `POST /api/routes/:featureId/changes` with role check, ~300 ms confirm, history write with source, simulator picks up new rule (FR-17..FR-20, FR-22, FR-32, NFR-6). Routing rule tests (NFR-14).
+- [x] **1.9 Route change API.** (#14) `POST /api/routes/estimate` (D13.10); `POST /api/routes/:featureId/changes` with role check, ~300 ms confirm, history write with source, simulator picks up new rule (FR-17..FR-20, FR-22, FR-32, NFR-6). Routing rule tests (NFR-14).
 - [ ] **1.10 Developer controls API.** (#15) Global rate, global fail-next route change, per-connection stream drop (D13.8, D13.9, D15.12).
 - [ ] **1.11 Web gateway client.** (#16) Interface (D1 seam) + HTTP/SSE implementation; reconnect with `since` backfill (FR-31); tests against a fake.
 

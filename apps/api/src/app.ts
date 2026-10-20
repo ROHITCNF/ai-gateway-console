@@ -3,12 +3,15 @@ import { Hono } from 'hono';
 import { type AuthEnv, requireSession, sessionMiddleware, sessionRoutes } from './auth/session';
 import type { Db } from './db/client';
 import { readRoutes } from './routes/read';
+import { routingRoutes } from './routes/routing';
 import { streamRoutes } from './routes/stream';
+import type { RoutingService } from './routing/service';
 import type { StreamHub } from './stream/hub';
 
 export interface AppDeps {
   db: Db;
   hub: StreamHub;
+  routing: RoutingService;
   sessionSecret: string;
   secureCookie?: boolean;
 }
@@ -24,6 +27,7 @@ export function createApp(deps: AppDeps) {
   app.use('*', requireSession);
   app.route('/', readRoutes(deps.db));
   app.route('/', streamRoutes(deps.hub));
+  app.route('/', routingRoutes(deps.routing));
 
   return app;
 }

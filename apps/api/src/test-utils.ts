@@ -1,8 +1,9 @@
-import type { Role } from '@gateway/contracts';
+import type { Role, RouteChangeResponse } from '@gateway/contracts';
 import { afterEach, beforeEach } from 'vitest';
 import { createApp } from './app';
 import { type Database, openDatabase } from './db/client';
 import { seedRoutingRules } from './db/seed';
+import { RoutingService } from './routing/service';
 import { StreamHub } from './stream/hub';
 
 export const TEST_SECRET = 'test-secret';
@@ -13,6 +14,10 @@ export function useTestApp() {
     database: Database;
     hub: StreamHub;
     app: ReturnType<typeof createApp>;
+    /** Confirmed route changes seen by `onChanged`. */
+    changed: RouteChangeResponse[];
+    /** Set true to fail the next route change. */
+    failNext: boolean;
     /** Signs in and returns the Cookie header value. */
     signIn(role?: Role, name?: string): Promise<string>;
     /** Request with a signed-in cookie. */
@@ -22,7 +27,18 @@ export function useTestApp() {
     ctx.database = await openDatabase();
     await seedRoutingRules(ctx.database.db);
     ctx.hub = new StreamHub();
-    ctx.app = createApp({ db: ctx.database.db, hub: ctx.hub, sessionSecret: TEST_SECRET });
+    ctx.changed = [];
+    ctx.failNext = false;
+    const routing = new RoutingService({
+      db: ctx.database.db,
+      shouldFail: () => {
+        const f = ctx.failNext;
+        ctx.failNext = false;
+        return f;
+      },
+      onChanged: (r) => ctx.changed.push(r),
+    });
+    ctx.app = createApp({ db: ctx.database.db, hub: ctx.hub, routing, sessionSecret: TEST_SECRET });
   });
   afterEach(() => ctx.database.close());
   ctx.signIn = async (role = 'admin', name = 'Priya') => {
