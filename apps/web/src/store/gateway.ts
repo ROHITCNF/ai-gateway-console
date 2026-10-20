@@ -88,7 +88,12 @@ export function applyConfirmed({ rule, change }: RouteChangeResponse) {
     history: s.history.data
       ? s.history.data.some((c) => c.id === change.id)
         ? s.history
-        : { ...s.history, data: [change, ...s.history.data] }
+        : {
+            ...s.history,
+            data: [change, ...s.history.data].sort((a, b) =>
+              b.timestamp.localeCompare(a.timestamp),
+            ),
+          }
       : s.history,
   }));
 }

@@ -35,7 +35,7 @@ describe('app shell (S1)', () => {
 
   it('shows disconnected and reconnected banners (FR-31)', async () => {
     const { client } = renderApp({ user: { name: 'Sam', role: 'viewer' } });
-    await screen.findByRole('navigation', { name: 'Main' });
+    await waitFor(() => expect(client.subscribers).toBe(1));
     act(() => client.emitStatus('connected'));
     expect(screen.getByText('Connected')).toBeDefined();
     act(() => client.emitStatus('disconnected'));
