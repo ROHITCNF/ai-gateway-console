@@ -1,25 +1,39 @@
-import { Activity } from 'lucide-react';
 import { Navigate, Route, Routes } from 'react-router';
+import { SessionProvider, useSession } from '@/auth/session';
+import { AppShell } from '@/components/shell/AppShell';
+import { type GatewayClient, GatewayProvider } from '@/gateway';
+import { CostSpeedPage, HistoryPage, LiveRequestsPage, RoutingPage } from '@/pages/placeholders';
+import { SignIn } from '@/pages/SignIn';
 
-function Home() {
-  return (
-    <main className="mx-auto max-w-5xl p-8">
-      <h1 className="flex items-center gap-2 text-2xl font-semibold">
-        <Activity className="size-6 text-primary" aria-hidden />
-        Gateway Console
-      </h1>
-      <p className="mt-1 text-muted-foreground">
-        Every AI request your features send through the gateway.
+function AppRoutes() {
+  const { user, checking } = useSession();
+  if (checking) {
+    return (
+      <p role="status" className="p-8 text-muted-foreground">
+        Loading…
       </p>
-    </main>
+    );
+  }
+  if (!user) return <SignIn />;
+  return (
+    <Routes>
+      <Route element={<AppShell />}>
+        <Route index element={<LiveRequestsPage />} />
+        <Route path="cost" element={<CostSpeedPage />} />
+        <Route path="routing" element={<RoutingPage />} />
+        <Route path="history" element={<HistoryPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Route>
+    </Routes>
   );
 }
 
-export function App() {
+export function App({ client }: { client: GatewayClient }) {
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <GatewayProvider client={client}>
+      <SessionProvider>
+        <AppRoutes />
+      </SessionProvider>
+    </GatewayProvider>
   );
 }

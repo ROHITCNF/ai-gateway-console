@@ -1,0 +1,86 @@
+import { useEffect } from 'react';
+import { NavLink, Outlet } from 'react-router';
+import { useSession } from '@/auth/session';
+import { Logo } from '@/components/Logo';
+import { Button } from '@/components/ui/button';
+import { useGateway } from '@/gateway';
+import { cn } from '@/lib/utils';
+import { connectRequests, requestStore } from '@/store';
+import { ConnectionBanner } from './ConnectionBanner';
+import { ConnectionIndicator } from './ConnectionIndicator';
+
+const NAV = [
+  { to: '/', label: 'Live Requests', end: true },
+  { to: '/cost', label: 'Cost & Speed' },
+  { to: '/routing', label: 'Routing' },
+  { to: '/history', label: 'History' },
+];
+
+function initials(name: string) {
+  return name
+    .split(/\s+/)
+    .map((p) => p[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+/** S1: top bar, navigation, connection banner and panel slots (FR-2, FR-31, NFR-11). */
+export function AppShell() {
+  const client = useGateway();
+  const { user, signOut } = useSession();
+
+  useEffect(() => connectRequests(client, requestStore), [client]);
+
+  if (!user) return null;
+  return (
+    <div className="flex min-h-screen flex-col">
+      <header className="sticky top-0 z-20 flex h-14 items-center gap-6 border-b bg-card px-4 lg:px-6">
+        <Logo />
+        <nav aria-label="Main" className="flex gap-1 overflow-x-auto">
+          {NAV.map((n) => (
+            <NavLink
+              key={n.to}
+              to={n.to}
+              end={n.end}
+              className={({ isActive }) =>
+                cn(
+                  'rounded-md px-3 py-1.5 text-sm whitespace-nowrap text-muted-foreground hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 outline-none',
+                  isActive && 'bg-secondary font-medium text-foreground',
+                )
+              }
+            >
+              {n.label}
+            </NavLink>
+          ))}
+        </nav>
+        <div className="ml-auto flex items-center gap-4">
+          <ConnectionIndicator />
+          <span className="flex items-center gap-2 text-sm">
+            <span
+              className="grid size-8 place-items-center rounded-full bg-secondary text-xs font-medium"
+              aria-hidden
+            >
+              {initials(user.name)}
+            </span>
+            <span className="font-medium" data-testid="user-name">
+              {user.name}
+            </span>
+            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+              {user.role === 'admin' ? 'Admin' : 'Viewer'}
+            </span>
+          </span>
+          <Button variant="outline" size="sm" onClick={() => void signOut()}>
+            Sign out
+          </Button>
+        </div>
+      </header>
+      <div className="flex min-h-0 flex-1">
+        <main className="min-w-0 flex-1 space-y-4 p-4 lg:p-6">
+          <ConnectionBanner />
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
+}
