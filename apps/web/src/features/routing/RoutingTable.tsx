@@ -126,7 +126,7 @@ export function RoutingTable({ rules }: { rules: RoutingRule[] }) {
                       gateway
                     </span>
                   ) : error ? (
-                    <span role="alert" className="inline-flex items-start gap-1.5 text-destructive">
+                    <span className="inline-flex items-start gap-1.5 text-destructive">
                       <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />
                       <span>
                         Not changed: {error} {f.displayName} still uses {modelName(r.mainModelId)}.

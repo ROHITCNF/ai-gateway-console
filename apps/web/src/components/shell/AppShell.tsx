@@ -4,6 +4,7 @@ import { useSession } from '@/auth/session';
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 import { DevControls } from '@/features/dev/DevControls';
+import { ReviewDialog } from '@/features/routing/ReviewDialog';
 import { useGateway } from '@/gateway';
 import { cn } from '@/lib/utils';
 import { applyConfirmed, connectRequests, gatewayStore, requestStore } from '@/store';
@@ -92,6 +93,7 @@ export function AppShell() {
           <Outlet />
           <DevControls />
         </main>
+        <ReviewDialog />
       </div>
     </div>
   );
