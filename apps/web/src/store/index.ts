@@ -1,13 +1,18 @@
 import { useMemo } from 'react';
 import { useStore } from 'zustand';
+import { Aggregates } from './aggregates';
 import { filterRequests } from './filters';
 import { createRequestStore, type RequestActions, type RequestState } from './requests';
 
+export * from './aggregates';
 export * from './filters';
 export * from './requests';
 
+/** Time-bucket totals for charts, fed by the request store (D8). */
+export const aggregates = new Aggregates();
+
 /** App-wide request store (D8). */
-export const requestStore = createRequestStore();
+export const requestStore = createRequestStore({ onIngest: (c) => aggregates.ingest(c) });
 
 export function useRequests<T>(selector: (s: RequestState & RequestActions) => T): T {
   return useStore(requestStore, selector);
