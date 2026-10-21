@@ -88,3 +88,4 @@ A slice is done when its FRs work in the running app and its tests pass (NFR-14)
 ## Fixes
 
 - [x] **F.1 Brand links home.** (#74) Header logo and name link to Live Requests (`/`).
+- [x] **F.3 Charts stay visible on hover.** (#76) Chart theme converts `oklch` tokens to `rgb` so ECharts can derive hover colours (D14.1).
