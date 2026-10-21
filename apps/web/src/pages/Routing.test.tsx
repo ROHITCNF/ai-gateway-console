@@ -2,47 +2,48 @@ import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { confirmReview, gatewayStore } from '@/store';
 import { renderApp } from '@/test/render';
+import { chooseOption } from '@/test/select';
 
 const admin = { name: 'Priya', role: 'admin' as const };
-const mainPicker = () => screen.getByLabelText('Main model for support-bot') as HTMLSelectElement;
+const mainPicker = () => screen.getByLabelText('Main model for support-bot') as HTMLButtonElement;
 
 describe('Routing screen (FR-16, FR-17, FR-32)', () => {
   it('lists every feature with team, main and backup model', async () => {
     renderApp({ user: admin, path: '/routing' });
     await screen.findByLabelText('Main model for support-bot');
     expect(screen.getAllByRole('row')).toHaveLength(6);
-    expect(mainPicker().value).toBe('claude-opus');
-    expect((screen.getByLabelText('Backup model for support-bot') as HTMLSelectElement).value).toBe(
-      'claude-sonnet',
-    );
+    expect(mainPicker().textContent).toBe('Claude Opus');
+    expect(
+      (screen.getByLabelText('Backup model for support-bot') as HTMLButtonElement).textContent,
+    ).toBe('Claude Sonnet');
     expect(screen.getByText('Customer Support')).toBeDefined();
   });
 
   it('picking a model opens the review and changes nothing yet (FR-18)', async () => {
     const { client } = renderApp({ user: admin, path: '/routing' });
     await screen.findByLabelText('Main model for support-bot');
-    fireEvent.change(mainPicker(), { target: { value: 'claude-haiku' } });
+    chooseOption(mainPicker(), 'Claude Haiku');
     expect(gatewayStore.getState().review).toEqual({
       featureId: 'support-bot',
       mainModelId: 'claude-haiku',
       fallbackModelId: 'claude-sonnet',
       source: 'click',
     });
-    expect(mainPicker().value).toBe('claude-opus');
+    expect(mainPicker().textContent).toBe('Claude Opus');
     expect(client.calls.some((c) => c.method === 'changeRoute')).toBe(false);
   });
 
   it('shows the new route only after the gateway confirms', async () => {
     const { client } = renderApp({ user: admin, path: '/routing' });
     await screen.findByLabelText('Main model for support-bot');
-    fireEvent.change(mainPicker(), { target: { value: 'claude-haiku' } });
+    chooseOption(mainPicker(), 'Claude Haiku');
     let done: Promise<boolean> = Promise.resolve(false);
     act(() => {
       done = confirmReview(client);
     });
     expect(screen.getByText(/Applying… waiting for gateway/)).toBeDefined();
     await act(() => done);
-    expect(mainPicker().value).toBe('claude-haiku');
+    expect(mainPicker().textContent).toBe('Claude Haiku');
     expect(gatewayStore.getState().history.data).toBeNull();
   });
 
@@ -50,9 +51,9 @@ describe('Routing screen (FR-16, FR-17, FR-32)', () => {
     const { client } = renderApp({ user: admin, path: '/routing' });
     await screen.findByLabelText('Main model for support-bot');
     client.fail.changeRoute = 'The gateway rejected the change. Try again.';
-    fireEvent.change(mainPicker(), { target: { value: 'claude-haiku' } });
+    chooseOption(mainPicker(), 'Claude Haiku');
     await act(() => confirmReview(client));
-    expect(mainPicker().value).toBe('claude-opus');
+    expect(mainPicker().textContent).toBe('Claude Opus');
     expect(screen.getByText(/Not changed: .* support-bot still uses Claude Opus\./)).toBeDefined();
   });
 
@@ -82,7 +83,7 @@ describe('Routing screen (FR-16, FR-17, FR-32)', () => {
         },
       }),
     );
-    await waitFor(() => expect(mainPicker().value).toBe('gemini'));
+    await waitFor(() => expect(mainPicker().textContent).toBe('Gemini'));
   });
 
   it('shows an error state when routes cannot load', async () => {

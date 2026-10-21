@@ -4,6 +4,7 @@ import { requestStore } from '@/store';
 import { makeRequest } from '@/test/factories';
 import { mockLayout } from '@/test/layout';
 import { renderApp } from '@/test/render';
+import { chooseOption } from '@/test/select';
 
 beforeAll(() => mockLayout());
 
@@ -42,7 +43,7 @@ const rowIds = () =>
 describe('Live Requests toolbar (FR-4, FR-5, FR-6)', () => {
   it('filters by status and shows a removable chip', async () => {
     await setup();
-    fireEvent.change(screen.getByLabelText('Status'), { target: { value: 'failed' } });
+    chooseOption(screen.getByLabelText('Status'), 'Failed');
     expect(rowIds()).toEqual(['req_bbb222']);
     expect(screen.getByText('Showing 1 of 3 requests')).toBeDefined();
     fireEvent.click(screen.getByRole('button', { name: 'Remove Status: Failed' }));
@@ -51,12 +52,12 @@ describe('Live Requests toolbar (FR-4, FR-5, FR-6)', () => {
 
   it('filters by feature, team, model and searches by ID', async () => {
     await setup();
-    fireEvent.change(screen.getByLabelText('Feature'), { target: { value: 'code-review' } });
+    chooseOption(screen.getByLabelText('Feature'), 'code-review');
     expect(rowIds()).toEqual(['req_ccc333']);
     fireEvent.click(screen.getByRole('button', { name: 'Clear all' }));
-    fireEvent.change(screen.getByLabelText('Team'), { target: { value: 'Customer Support' } });
+    chooseOption(screen.getByLabelText('Team'), 'Customer Support');
     expect(rowIds()).toHaveLength(2);
-    fireEvent.change(screen.getByLabelText('Model'), { target: { value: 'claude-sonnet' } });
+    chooseOption(screen.getByLabelText('Model'), 'Claude Sonnet');
     expect(rowIds()).toEqual([]);
     fireEvent.click(screen.getByRole('button', { name: 'Clear all' }));
     fireEvent.change(screen.getByLabelText('Request ID'), { target: { value: 'BBB' } });

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { FakeGatewayClient } from '@/gateway/fake';
 import { openReview } from '@/store';
 import { renderApp } from '@/test/render';
+import { chooseOption } from '@/test/select';
 
 const viewer = { name: 'Sam', role: 'viewer' as const };
 
@@ -10,7 +11,7 @@ describe('Viewer UI (FR-21, Flow F)', () => {
   it('disables every routing picker with a short note', async () => {
     renderApp({ user: viewer, path: '/routing' });
     await screen.findByLabelText('Main model for support-bot');
-    const pickers = screen.getAllByRole('combobox') as HTMLSelectElement[];
+    const pickers = screen.getAllByRole('combobox') as HTMLButtonElement[];
     expect(pickers).toHaveLength(10);
     expect(pickers.every((p) => p.disabled)).toBe(true);
     expect(screen.getByText(/Only Admins can change routes\./)).toBeDefined();
@@ -62,9 +63,9 @@ describe('Viewer UI (FR-21, Flow F)', () => {
     const { client } = renderApp({ user: { name: 'Priya', role: 'admin' }, path: '/routing' });
     const picker = (await screen.findByLabelText(
       'Main model for support-bot',
-    )) as HTMLSelectElement;
+    )) as HTMLButtonElement;
     client.user = viewer;
-    fireEvent.change(picker, { target: { value: 'claude-haiku' } });
+    chooseOption(picker, 'Claude Haiku');
     const dialog = await screen.findByRole('dialog');
     fireEvent.click(within(dialog).getByRole('button', { name: 'Confirm change' }));
     const alert = await within(dialog).findByRole('alert');
@@ -72,13 +73,7 @@ describe('Viewer UI (FR-21, Flow F)', () => {
     expect(client.rules.find((r) => r.featureId === 'support-bot')?.mainModelId).toBe(
       'claude-opus',
     );
-    expect(
-      (
-        screen.getByLabelText('Main model for support-bot', {
-          selector: 'select',
-        }) as HTMLSelectElement
-      ).value,
-    ).toBe('claude-opus');
+    expect(screen.getByLabelText('Main model for support-bot').textContent).toBe('Claude Opus');
     expect(client.history).toHaveLength(0);
   });
 
@@ -86,7 +81,7 @@ describe('Viewer UI (FR-21, Flow F)', () => {
     renderApp({ user: { name: 'Priya', role: 'admin' }, path: '/routing' });
     const picker = (await screen.findByLabelText(
       'Main model for support-bot',
-    )) as HTMLSelectElement;
+    )) as HTMLButtonElement;
     expect(picker.disabled).toBe(false);
     expect(screen.queryByText(/Only Admins can change routes/)).toBeNull();
   });

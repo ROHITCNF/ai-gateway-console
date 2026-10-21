@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { gatewayStore, openReview } from '@/store';
 import { renderApp } from '@/test/render';
+import { chooseOption } from '@/test/select';
 import { describeEstimate } from './ReviewDialog';
 
 const admin = { name: 'Priya', role: 'admin' as const };
@@ -9,7 +10,7 @@ const admin = { name: 'Priya', role: 'admin' as const };
 async function openFromRouting() {
   const utils = renderApp({ user: admin, path: '/routing' });
   const picker = await screen.findByLabelText('Main model for support-bot');
-  fireEvent.change(picker, { target: { value: 'claude-haiku' } });
+  chooseOption(picker, 'Claude Haiku');
   const dialog = await screen.findByRole('dialog', { name: 'Review route change' });
   return { ...utils, dialog };
 }
@@ -64,9 +65,9 @@ describe('Review step (S5, FR-18, FR-19, FR-32)', () => {
     expect(client.rules.find((r) => r.featureId === 'support-bot')?.mainModelId).toBe(
       'claude-haiku',
     );
-    expect((screen.getByLabelText('Main model for support-bot') as HTMLSelectElement).value).toBe(
-      'claude-haiku',
-    );
+    expect(
+      (screen.getByLabelText('Main model for support-bot') as HTMLButtonElement).textContent,
+    ).toBe('Claude Haiku');
   });
 
   it('shows the gateway error in the dialog and keeps the old route', async () => {
@@ -76,13 +77,7 @@ describe('Review step (S5, FR-18, FR-19, FR-32)', () => {
     const alert = await within(dialog).findByRole('alert');
     expect(alert.textContent).toContain('support-bot still uses Claude Opus. Nothing was changed.');
     expect(within(dialog).getByRole('button', { name: 'Try again' })).toBeDefined();
-    expect(
-      (
-        screen.getByLabelText('Main model for support-bot', {
-          selector: 'select',
-        }) as HTMLSelectElement
-      ).value,
-    ).toBe('claude-opus');
+    expect(screen.getByLabelText('Main model for support-bot').textContent).toBe('Claude Opus');
   });
 
   it('labels chat proposals', async () => {
