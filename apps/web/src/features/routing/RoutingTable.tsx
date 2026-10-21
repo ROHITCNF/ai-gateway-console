@@ -1,7 +1,13 @@
 import { FEATURES, getFeature, MODELS, ModelId, type RoutingRule } from '@gateway/contracts';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { ADMIN_ONLY, useCanChangeRoutes } from '@/auth/useCanChangeRoutes';
-import { Select } from '@/components/ui/field';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { formatDateTime, modelName } from '@/lib/format';
 import { openReview, useGatewayState } from '@/store';
 
@@ -23,24 +29,30 @@ function ModelPicker({
   const canChange = useCanChangeRoutes();
   return (
     <Select
-      id={id}
-      aria-label={label}
       value={value}
       disabled={disabled || !canChange}
-      title={canChange ? undefined : ADMIN_ONLY}
-      aria-describedby={canChange ? undefined : 'routes-read-only'}
-      onChange={(e) => {
-        const m = ModelId.safeParse(e.target.value);
+      onValueChange={(v) => {
+        const m = ModelId.safeParse(v);
         if (m.success && m.data !== value) onPick(m.data);
       }}
-      className="w-full max-w-60"
     >
-      {MODELS.map((m) => (
-        <option key={m.id} value={m.id} disabled={m.id === exclude}>
-          {m.displayName}
-          {m.id === exclude ? ' (in use as the other model)' : ''}
-        </option>
-      ))}
+      <SelectTrigger
+        id={id}
+        aria-label={label}
+        title={canChange ? undefined : ADMIN_ONLY}
+        aria-describedby={canChange ? undefined : 'routes-read-only'}
+        className="w-full max-w-60"
+      >
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {MODELS.map((m) => (
+          <SelectItem key={m.id} value={m.id} disabled={m.id === exclude}>
+            {m.displayName}
+            {m.id === exclude ? ' (in use as the other model)' : ''}
+          </SelectItem>
+        ))}
+      </SelectContent>
     </Select>
   );
 }

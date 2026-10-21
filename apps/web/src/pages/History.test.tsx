@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { formatEstimate } from '@/features/history/HistoryTable';
 import { FakeGatewayClient } from '@/gateway/fake';
 import { renderApp } from '@/test/render';
+import { chooseOption } from '@/test/select';
 
 const admin = { name: 'Priya', role: 'admin' as const };
 
@@ -47,9 +48,7 @@ describe('History (FR-22)', () => {
 
   it('shows a new entry right after a confirmed change (Flow C step 7)', async () => {
     const { client } = renderApp({ user: admin, path: '/routing' });
-    fireEvent.change(await screen.findByLabelText('Main model for support-bot'), {
-      target: { value: 'claude-haiku' },
-    });
+    chooseOption(await screen.findByLabelText('Main model for support-bot'), 'Claude Haiku');
     fireEvent.click(await screen.findByRole('button', { name: 'Confirm change' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     fireEvent.click(screen.getByRole('link', { name: 'History' }));
