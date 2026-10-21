@@ -1,6 +1,6 @@
 import { MessageSquare } from 'lucide-react';
 import { lazy, Suspense, useEffect } from 'react';
-import { NavLink, Outlet } from 'react-router';
+import { Link, NavLink, Outlet } from 'react-router';
 import { useSession } from '@/auth/session';
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
@@ -54,7 +54,13 @@ export function AppShell() {
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-20 flex h-14 items-center gap-6 border-b bg-card px-4 lg:px-6">
-        <Logo />
+        <Link
+          to="/"
+          aria-label="Gateway Console home"
+          className="rounded-md outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        >
+          <Logo />
+        </Link>
         <nav aria-label="Main" className="flex gap-1 overflow-x-auto">
           {NAV.map((n) => (
             <NavLink

@@ -33,6 +33,13 @@ describe('app shell (S1)', () => {
     expect(screen.getByText(/Every AI request your features send/)).toBeDefined();
   });
 
+  it('brand logo and name link back to the home screen', async () => {
+    renderApp({ user: { name: 'Sam', role: 'viewer' }, path: '/history' });
+    expect(await screen.findByRole('heading', { name: 'History' })).toBeDefined();
+    fireEvent.click(screen.getByRole('link', { name: 'Gateway Console home' }));
+    expect(await screen.findByRole('heading', { name: 'Live Requests' })).toBeDefined();
+  });
+
   it('shows disconnected and reconnected banners (FR-31)', async () => {
     const { client } = renderApp({ user: { name: 'Sam', role: 'viewer' } });
     await waitFor(() => expect(client.subscribers).toBe(1));

@@ -84,3 +84,7 @@ A slice is done when its FRs work in the running app and its tests pass (NFR-14)
 - [ ] **7.2 README.** (#37) Problem, screenshot, measured numbers + method, key decisions, what is simulated, link to `decisions.md` (NFR-16, NFR-17, D11).
 - [ ] **7.3 Hosting decision.** (#38) New `D<n>` entry: where web, api and Postgres run.
 - [ ] **7.4 Deploy.** (#39) Public link (NFR-15). Done by the user.
+
+## Fixes
+
+- [x] **F.1 Brand links home.** (#74) Header logo and name link to Live Requests (`/`).
