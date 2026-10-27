@@ -14,14 +14,8 @@ const CostSpeedPage = lazy(() => import('@/pages/CostSpeed'));
 import { SignIn } from '@/pages/SignIn';
 
 function AppRoutes() {
-  const { user, checking } = useSession();
-  if (checking) {
-    return (
-      <p role="status" className="p-8 text-muted-foreground">
-        Loading…
-      </p>
-    );
-  }
+  const { user } = useSession();
+  // While the session check runs, SignIn shows the boot screen and lets the user fill the form.
   if (!user) return <SignIn />;
   return (
     <Routes>

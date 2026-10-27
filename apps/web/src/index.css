@@ -74,3 +74,84 @@
     @apply bg-background text-foreground font-sans antialiased;
   }
 }
+
+/* Boot screen while a sleeping server wakes (cold start). */
+@utility shimmer {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--color-muted);
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, oklch(1 0 0 / 0.7), transparent);
+    animation: boot-shimmer 1.4s ease-in-out infinite;
+  }
+}
+
+.boot-trace path[pathLength] {
+  stroke-dasharray: 1;
+  animation: boot-trace 1.8s ease-in-out infinite;
+}
+
+.boot-ring {
+  animation: boot-ring 1.8s ease-out infinite;
+}
+
+/* Fast at first, then slows toward 92%: feels like progress without claiming a real number. */
+.boot-progress {
+  width: 0;
+  animation: boot-progress 60s cubic-bezier(0.1, 0.7, 0.3, 1) forwards;
+}
+
+@keyframes boot-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes boot-trace {
+  0% {
+    stroke-dashoffset: 1;
+  }
+  55% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -1;
+  }
+}
+
+@keyframes boot-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+@keyframes boot-progress {
+  to {
+    width: 92%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer::after,
+  .boot-ring {
+    animation: none;
+    opacity: 0;
+  }
+  .boot-trace path[pathLength] {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+  .boot-progress {
+    animation: none;
+    width: 60%;
+  }
+}

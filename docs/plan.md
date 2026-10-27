@@ -90,3 +90,4 @@ A slice is done when its FRs work in the running app and its tests pass (NFR-14)
 - [x] **F.1 Brand links home.** (#74) Header logo and name link to Live Requests (`/`).
 - [x] **F.2 shadcn Select for dropdowns.** (#75) Live Requests filters and Routing pickers use the Radix-based shadcn `Select`; chevron gets proper padding (D14.2, FR-21).
 - [x] **F.3 Charts stay visible on hover.** (#76) Chart theme converts `oklch` tokens to `rgb` so ECharts can derive hover colours (D14.1).
+- [x] **F.4 Cold start boot screen.** (#80) While `/api/session` is pending: animated logo, stage status and progress bar, shimmer form skeleton; form usable after 3 s; session and sign-in retry while the host wakes (FR-1).

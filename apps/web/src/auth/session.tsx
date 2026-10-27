@@ -6,15 +6,16 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
-import { useGateway } from '@/gateway';
+import { GatewayError, useGateway } from '@/gateway';
 import { requestStore, resetGatewayState } from '@/store';
 import { resetChatState } from '@/store/chat';
 
 interface SessionValue {
   user: User | null;
-  /** True until the backend says who is signed in. */
+  /** True until the backend says who is signed in; long on a cold start. */
   checking: boolean;
   signIn(user: User): Promise<void>;
   signOut(): Promise<void>;
@@ -22,18 +23,39 @@ interface SessionValue {
 
 const SessionContext = createContext<SessionValue | null>(null);
 
+const RETRY_MS = 2000;
+const GIVE_UP_MS = 90_000;
+
+/**
+ * A sleeping free-tier host answers 502–504 (or nothing) while it boots. Keep retrying until it
+ * is up, so a cold start looks slow rather than broken.
+ */
+export async function whenAwake<T>(call: () => Promise<T>, now = Date.now): Promise<T> {
+  const start = now();
+  for (;;) {
+    try {
+      return await call();
+    } catch (err) {
+      const waking = err instanceof GatewayError && (err.status === 0 || err.status >= 502);
+      if (!waking || now() - start > GIVE_UP_MS) throw err;
+      await new Promise((r) => setTimeout(r, RETRY_MS));
+    }
+  }
+}
+
 /** Auth seam (D4, D15.7): the session lives in the backend cookie; this only mirrors it. */
 export function SessionProvider({ children }: { children: ReactNode }) {
   const client = useGateway();
   const [user, setUser] = useState<User | null>(null);
   const [checking, setChecking] = useState(true);
+  // Once the user signs in, a late session answer from a cold start must not overwrite it.
+  const signedIn = useRef(false);
 
   useEffect(() => {
     let live = true;
-    client
-      .getSession()
-      .then((u) => live && setUser(u))
-      .catch(() => live && setUser(null))
+    whenAwake(() => client.getSession())
+      .then((u) => live && !signedIn.current && setUser(u))
+      .catch(() => live && !signedIn.current && setUser(null))
       .finally(() => live && setChecking(false));
     return () => {
       live = false;
@@ -42,7 +64,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const signIn = useCallback(
     async (u: User) => {
-      setUser(await client.signIn(u));
+      const signed = await whenAwake(() => client.signIn(u));
+      signedIn.current = true;
+      setUser(signed);
     },
     [client],
   );
@@ -51,6 +75,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     requestStore.getState().reset();
     resetGatewayState();
     resetChatState();
+    signedIn.current = false;
     setUser(null);
   }, [client]);
 
